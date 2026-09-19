@@ -1,0 +1,64 @@
+<section class="page-head">
+  <h2>Fluxos Bizagi</h2>
+  <p>
+    Diagramas dos processos do Sistema de Gestão de Contratos. A ordem das abas segue a coluna
+    <strong>Seq</strong> da planilha.
+  </p>
+</section>
+
+@if (projeto.fluxos().length) {
+  <nav class="filters" aria-label="Fluxos">
+    @for (fluxo of projeto.fluxos(); track fluxo.id) {
+      <button
+        type="button"
+        [class.is-active]="fluxoSelecionado()?.id === fluxo.id"
+        [class.is-inactive]="fluxo.status && fluxo.status.toLowerCase() !== 'ativo' && fluxo.status.toLowerCase() !== 'aprovado'"
+        (click)="selecionar(fluxo.id)"
+        [title]="fluxo.nome + ' · ' + fluxo.status"
+      >
+        <span class="filters__seq">{{ fluxo.seq }}</span>
+        {{ fluxo.nome }}
+      </button>
+    }
+  </nav>
+
+  @if (fluxoSelecionado(); as fluxo) {
+    <section class="viewer">
+      <header class="viewer__bar">
+        <div>
+          <p class="viewer__kicker">Diagrama do fluxo · Seq {{ fluxo.seq }}</p>
+          <div class="viewer__title-row">
+            <h3>{{ fluxo.nome }}</h3>
+            <span class="badge" [attr.data-status]="fluxo.status">{{ fluxo.status }}</span>
+          </div>
+          @if (fluxo.descricao) {
+            <p class="viewer__desc">{{ fluxo.descricao }}</p>
+          }
+        </div>
+        <div class="viewer__actions">
+          <button type="button" class="btn btn--ghost" (click)="zoomOut()" aria-label="Diminuir zoom">
+            −
+          </button>
+          <button type="button" class="btn btn--ghost" (click)="zoomReset()">
+            {{ (zoom() * 100) | number: '1.0-0' }}%
+          </button>
+          <button type="button" class="btn btn--ghost" (click)="zoomIn()" aria-label="Aumentar zoom">
+            +
+          </button>
+          <a class="btn" [href]="fluxo.imagem" target="_blank" rel="noopener" download>Baixar PNG</a>
+        </div>
+      </header>
+
+      <div class="viewer__stage">
+        <img
+          [src]="fluxo.imagem"
+          [alt]="fluxo.nome"
+          class="viewer__image"
+          [style.transform]="'scale(' + zoom() + ')'"
+        />
+      </div>
+    </section>
+  }
+} @else {
+  <p class="empty">Nenhum diagrama disponível. Cadastre na aba Fluxos Bizagi da planilha.</p>
+}

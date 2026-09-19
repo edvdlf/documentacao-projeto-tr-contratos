@@ -1,0 +1,83 @@
+<div class="shell" [class.shell--collapsed]="collapsed()">
+  <aside class="sidebar" [attr.aria-expanded]="!collapsed()">
+    <div class="sidebar__top">
+      <div class="sidebar__brand">
+        <span class="sidebar__mark" aria-hidden="true"></span>
+        <div class="sidebar__brand-text">
+          <p class="sidebar__eyebrow">Thomson Reuters</p>
+          <p class="sidebar__title">Contratos · Docs</p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="sidebar__toggle"
+        (click)="toggleSidebar()"
+        [attr.aria-label]="collapsed() ? 'Expandir menu' : 'Recolher menu'"
+        [title]="collapsed() ? 'Expandir menu' : 'Recolher menu'"
+      >
+        <span aria-hidden="true">{{ collapsed() ? '»' : '«' }}</span>
+      </button>
+    </div>
+
+    <nav class="sidebar__nav" aria-label="Principal">
+      <a
+        routerLink="/"
+        routerLinkActive="is-active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        title="Resumo"
+      >
+        <span class="sidebar__icon" aria-hidden="true">R</span>
+        <span class="sidebar__label">Resumo</span>
+      </a>
+      <a routerLink="/entregues" routerLinkActive="is-active" title="Desenvolvidas">
+        <span class="sidebar__icon" aria-hidden="true">D</span>
+        <span class="sidebar__label">Desenvolvidas</span>
+      </a>
+      <a routerLink="/proxima-sprint" routerLinkActive="is-active" title="Próxima Sprint">
+        <span class="sidebar__icon" aria-hidden="true">P</span>
+        <span class="sidebar__label">Próxima Sprint</span>
+      </a>
+      <a routerLink="/pendencias" routerLinkActive="is-active" title="Pendências">
+        <span class="sidebar__icon" aria-hidden="true">N</span>
+        <span class="sidebar__label">Pendências</span>
+      </a>
+      <a routerLink="/riscos" routerLinkActive="is-active" title="Riscos">
+        <span class="sidebar__icon" aria-hidden="true">!</span>
+        <span class="sidebar__label">Riscos</span>
+      </a>
+      <a routerLink="/evolucao" routerLinkActive="is-active" title="Evolução">
+        <span class="sidebar__icon" aria-hidden="true">V</span>
+        <span class="sidebar__label">Evolução</span>
+      </a>
+      <a routerLink="/bizagi" routerLinkActive="is-active" title="Fluxos Bizagi">
+        <span class="sidebar__icon" aria-hidden="true">F</span>
+        <span class="sidebar__label">Fluxos Bizagi</span>
+      </a>
+    </nav>
+
+    <p class="sidebar__foot">Fonte: Sprint Review · Controle de Entregas</p>
+  </aside>
+
+  <div class="shell__main">
+    <header class="topbar">
+      <div>
+        <p class="topbar__kicker">Sprint Review · Controle de entregas</p>
+        <h1 class="topbar__heading">Sistema de Gestão de Contratos</h1>
+      </div>
+      <div class="topbar__badge">Cliente · Thomson Reuters</div>
+    </header>
+
+    <main class="content">
+      <router-outlet />
+    </main>
+
+    <footer class="footer">
+      <span>© {{ ano }} · Documentação do projeto TR Contratos</span>
+        <span
+          >Edite e salve <code>conteudo/Sprint_Review_Controle_Entregas.xlsx</code>, depois
+          reinicie o <code>npm start</code></span
+        >
+    </footer>
+  </div>
+</div>

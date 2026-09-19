@@ -1,0 +1,158 @@
+@let resumo = projeto.resumo();
+@let totais = resumo.totais;
+@let t = tarefas();
+
+<section class="hero">
+  <div>
+    <p class="hero__label">Thomson Reuters · Sprint Review</p>
+    <h2>{{ resumo.titulo }}</h2>
+    <p class="hero__text">{{ resumo.subtitulo }}</p>
+  </div>
+  <div class="hero__meta">
+    <div>
+      <span>Sprints no resumo</span>
+      <strong>{{ totais.sprintsNoResumo }}</strong>
+    </div>
+    <div>
+      <span>Aderência</span>
+      <strong>{{ totais.aderencia }}</strong>
+    </div>
+  </div>
+</section>
+
+<section class="panel chart-panel">
+  <div class="panel__head">
+    <h3>Desenvolvidas × a desenvolver</h3>
+    <a routerLink="/evolucao">Ver evolução</a>
+  </div>
+  <p class="chart-panel__hint">
+    Conforme a aba <strong>Evolução do Projeto</strong> da planilha (planejadas × entregues).
+  </p>
+
+  <div class="chart">
+    <div class="chart__visual" aria-hidden="true">
+      <svg viewBox="0 0 100 100" class="chart__donut">
+        <circle class="chart__track" cx="50" cy="50" r="42" />
+        <circle
+          class="chart__slice chart__slice--done"
+          cx="50"
+          cy="50"
+          r="42"
+          [attr.stroke-dasharray]="dashDesenvolvidas()"
+          stroke-dashoffset="0"
+        />
+      </svg>
+      <div class="chart__center">
+        <strong>{{ t.percentualDesenvolvidas }}%</strong>
+        <span>desenvolvidas</span>
+      </div>
+    </div>
+
+    <ul class="chart__legend">
+      <li>
+        <span class="swatch swatch--done"></span>
+        <div>
+          <strong>Desenvolvidas</strong>
+          <p>{{ t.desenvolvidas }} tarefas</p>
+        </div>
+      </li>
+      <li>
+        <span class="swatch swatch--todo"></span>
+        <div>
+          <strong>A desenvolver</strong>
+          <p>{{ t.aDesenvolver }} tarefas</p>
+        </div>
+      </li>
+      <li class="chart__total">
+        <div>
+          <strong>Total planejado</strong>
+          <p>{{ t.planejadoTotal }} tarefas</p>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <div
+    class="chart__bar"
+    role="img"
+    [attr.aria-label]="'Desenvolvidas ' + t.desenvolvidas + ' de ' + t.planejadoTotal"
+  >
+    <div
+      class="chart__bar-done"
+      [style.width.%]="t.percentualDesenvolvidas"
+      [title]="t.desenvolvidas + ' desenvolvidas'"
+    ></div>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel__head">
+    <h3>Desempenho por sprint</h3>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Sprint</th>
+          <th>Planejados</th>
+          <th>Concluídos</th>
+          <th>% Concluído</th>
+          <th>Status</th>
+          <th>Período</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (s of resumo.desempenho; track s.sprint) {
+          <tr>
+            <td>{{ s.sprint }}</td>
+            <td>{{ s.planejados }}</td>
+            <td>{{ s.concluidos }}</td>
+            <td>{{ s.percentual }}</td>
+            <td><span class="pill">{{ s.status }}</span></td>
+            <td>{{ s.periodo }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  @if (resumo.observacao) {
+    <p class="note">{{ resumo.observacao }}</p>
+  }
+</section>
+
+<section class="panel panel--wide">
+  <div class="panel__head">
+    <h3>Pendências e decisões</h3>
+    <a routerLink="/pendencias">Ver todas</a>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Tema</th>
+          <th>Pergunta / Decisão</th>
+          <th>Responsável</th>
+          <th>Status</th>
+          <th>Impacto</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (p of projeto.pendencias(); track p.id) {
+          <tr>
+            <td class="id">{{ p.id }}</td>
+            <td>{{ p.tema }}</td>
+            <td class="desc">{{ p.pergunta }}</td>
+            <td>{{ p.responsavel }}</td>
+            <td>{{ p.status }}</td>
+            <td>{{ p.impacto }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="empty">Nenhuma pendência registrada.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

@@ -1,0 +1,56 @@
+<section class="page-head">
+  <div>
+    <h2>Funcionalidades desenvolvidas</h2>
+    <p>
+      Estas funcionalidades já foram desenvolvidas e formam a base do sistema. O código
+      implementado aqui é pré-requisito para as próximas sprints e para o avanço do restante
+      do produto ({{ projeto.entregues().length }} itens).
+    </p>
+  </div>
+</section>
+
+<nav class="filters" aria-label="Filtro por sprint">
+  <button type="button" [class.is-active]="sprintFiltro() === 'todas'" (click)="selecionarSprint('todas')">
+    Todas
+  </button>
+  @for (sprint of projeto.sprintsEntregues(); track sprint) {
+    <button type="button" [class.is-active]="sprintFiltro() === sprint" (click)="selecionarSprint(sprint)">
+      {{ sprint }}
+    </button>
+  }
+</nav>
+
+<div class="table-wrap panel">
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Sprint</th>
+        <th>Funcionalidade</th>
+        <th>Descrição</th>
+        <th>Responsável</th>
+        <th>Status</th>
+        <th>Observações</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of filtrados(); track item.id) {
+        <tr>
+          <td class="id">{{ item.id }}</td>
+          <td>{{ item.sprint }}</td>
+          <td class="nome">{{ item.funcionalidade }}</td>
+          <td class="desc">{{ item.descricao }}</td>
+          <td>{{ item.responsavel }}</td>
+          <td>
+            <span class="badge" [attr.data-status]="item.status">{{ item.status }}</span>
+          </td>
+          <td>{{ item.observacoes || '—' }}</td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="7" class="empty">Nenhuma entrega neste filtro.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,208 @@
+.page-head h2 {
+  margin: 0 0 0.35rem;
+}
+
+.page-head p {
+  margin: 0 0 1rem;
+  color: var(--dove);
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+}
+
+.filters button {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--charcoal);
+  border-radius: 999px;
+  padding: 0.4rem 0.75rem;
+  font-weight: 600;
+  font-size: 0.82rem;
+  cursor: pointer;
+  max-width: 100%;
+}
+
+.filters button.is-active {
+  background: var(--orange-primary);
+  border-color: var(--orange-primary);
+  color: #fff;
+}
+
+.filters button.is-inactive:not(.is-active) {
+  opacity: 0.72;
+  border-style: dashed;
+}
+
+.filters__seq {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.15rem;
+  margin-right: 0.25rem;
+  font-weight: 800;
+  opacity: 0.85;
+}
+
+.viewer {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  min-height: 28rem;
+}
+
+.viewer__bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 0.85rem 1.15rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.viewer__kicker {
+  margin: 0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--orange-primary);
+  font-weight: 700;
+}
+
+.viewer__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 0.15rem;
+}
+
+.viewer__bar h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--tundora);
+}
+
+.badge {
+  display: inline-flex;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: var(--mercury);
+  color: var(--charcoal);
+  white-space: nowrap;
+}
+
+.badge[data-status='Ativo'],
+.badge[data-status='ativo'],
+.badge[data-status='Aprovado'],
+.badge[data-status='aprovado'] {
+  background: color-mix(in srgb, var(--success) 16%, white);
+  color: var(--success);
+}
+
+.badge[data-status='Aguardando aprovação'],
+.badge[data-status='aguardando aprovação'],
+.badge[data-status='Aguardando Aprovação'] {
+  background: #ffe566;
+  color: #7a6200;
+  border: 1px solid #f0c400;
+}
+
+.badge[data-status='Em refinamento'],
+.badge[data-status='em refinamento'],
+.badge[data-status='Refinamento'],
+.badge[data-status='refinamento'] {
+  background: color-mix(in srgb, var(--danger) 14%, white);
+  color: var(--danger);
+  border: 1px solid color-mix(in srgb, var(--danger) 35%, white);
+}
+
+.badge[data-status='Inativo'],
+.badge[data-status='inativo'],
+.badge[data-status='Em revisão'],
+.badge[data-status='A revisar'] {
+  background: color-mix(in srgb, var(--warning) 18%, white);
+  color: #8a5a00;
+}
+
+.viewer__desc {
+  margin: 0.35rem 0 0;
+  color: var(--dove);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  max-width: 40rem;
+}
+
+.viewer__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  background: var(--orange-primary);
+  color: #fff;
+  font-weight: 700;
+  padding: 0.5rem 0.85rem;
+  border-radius: 6px;
+  border: 0;
+  cursor: pointer;
+  text-decoration: none;
+  min-width: 2.2rem;
+  font-size: 0.88rem;
+}
+
+.btn:hover {
+  background: var(--orange-deep);
+}
+
+.btn--ghost {
+  background: var(--surface);
+  color: var(--charcoal);
+  border: 1px solid var(--border);
+}
+
+.btn--ghost:hover {
+  background: var(--orange-tint);
+  border-color: var(--orange-primary);
+  color: var(--orange-deep);
+}
+
+.viewer__stage {
+  flex: 1;
+  overflow: auto;
+  padding: 1.25rem;
+  display: grid;
+  place-items: start center;
+  background: var(--wild-sand);
+  min-height: 22rem;
+}
+
+.viewer__image {
+  max-width: 100%;
+  height: auto;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(31, 31, 31, 0.08);
+  transform-origin: top center;
+  transition: transform 0.15s ease;
+}
+
+.empty {
+  color: var(--dove);
+}

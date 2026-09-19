@@ -1,0 +1,82 @@
+:root {
+  --orange-brand: #ff8000;
+  --orange-primary: #d64000;
+  --orange-active: #993500;
+  --orange-deep: #ab3300;
+  --orange-tint: #f8eadd;
+  --charcoal: #404040;
+  --tundora: #1f1f1f;
+  --dove: #666666;
+  --border: #d0d0d0;
+  --mercury: #e9e9e9;
+  --wild-sand: #f7f7f7;
+  --surface: #ffffff;
+  --link-blue: #005da2;
+  --success: #387c2b;
+  --warning: #ffa100;
+  --danger: #dc0a0a;
+  --info: #0062c4;
+  --sidebar-width: 260px;
+  --sidebar-collapsed-width: 72px;
+  --font-sans: 'Source Sans 3', 'Segoe UI', sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--charcoal);
+  background: var(--wild-sand);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--link-blue);
+  text-decoration: none;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* Status do fluxo (somente o badge) */
+.badge[data-status='Aguardando aprovação'],
+.badge[data-status='aguardando aprovação'],
+.badge[data-status='Aguardando Aprovação'] {
+  background: #ffe566 !important;
+  color: #7a6200 !important;
+  border: 1px solid #f0c400;
+}
+
+.badge[data-status='Aprovado'],
+.badge[data-status='aprovado'] {
+  background: color-mix(in srgb, var(--success) 16%, white) !important;
+  color: var(--success) !important;
+  border: 1px solid color-mix(in srgb, var(--success) 35%, white);
+}
+
+.badge[data-status='Em refinamento'],
+.badge[data-status='em refinamento'],
+.badge[data-status='Refinamento'],
+.badge[data-status='refinamento'] {
+  background: color-mix(in srgb, var(--danger) 14%, white) !important;
+  color: var(--danger) !important;
+  border: 1px solid color-mix(in srgb, var(--danger) 35%, white);
+}

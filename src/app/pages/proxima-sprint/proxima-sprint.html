@@ -1,0 +1,45 @@
+<section class="page-head">
+  <h2>Planejamento da próxima sprint</h2>
+  <p>
+    Itens da aba “Próxima Sprint”
+    @if (projeto.proximaSprint()[0]?.sprint; as sprint) {
+      — {{ sprint }}
+    }
+    ({{ projeto.proximaSprint().length }} itens).
+  </p>
+</section>
+
+<div class="table-wrap panel">
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Sprint</th>
+        <th>Funcionalidade</th>
+        <th>Descrição</th>
+        <th>Responsável</th>
+        <th>Status</th>
+        <th>Observações</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of projeto.proximaSprint(); track item.id) {
+        <tr>
+          <td class="id">{{ item.id }}</td>
+          <td>{{ item.sprint }}</td>
+          <td class="nome">{{ item.funcionalidade }}</td>
+          <td class="desc">{{ item.descricao }}</td>
+          <td>{{ item.responsavel }}</td>
+          <td>
+            <span class="badge" [attr.data-status]="item.status">{{ item.status }}</span>
+          </td>
+          <td>{{ item.observacoes || '—' }}</td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="7" class="empty">Nenhum item planejado.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

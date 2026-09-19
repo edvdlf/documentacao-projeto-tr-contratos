@@ -1,0 +1,49 @@
+<section class="page-head">
+  <h2>Riscos do projeto</h2>
+  <p>
+    Ameaças que podem impactar prazo, escopo ou qualidade. Diferente das pendências (dúvidas e
+    decisões), aqui registramos o que pode atrapalhar o avanço e como mitigar
+    ({{ projeto.riscos().length }} itens).
+  </p>
+</section>
+
+<div class="table-wrap panel">
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Risco</th>
+        <th>Descrição</th>
+        <th>Impacto</th>
+        <th>Probabilidade</th>
+        <th>Mitigação</th>
+        <th>Responsável</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of projeto.riscos(); track item.id) {
+        <tr>
+          <td class="id">{{ item.id }}</td>
+          <td class="nome">{{ item.risco }}</td>
+          <td class="desc">{{ item.descricao }}</td>
+          <td>
+            <span class="badge" [attr.data-nivel]="item.impacto">{{ item.impacto }}</span>
+          </td>
+          <td>
+            <span class="badge" [attr.data-nivel]="item.probabilidade">{{ item.probabilidade }}</span>
+          </td>
+          <td class="desc">{{ item.mitigacao }}</td>
+          <td>{{ item.responsavel }}</td>
+          <td>
+            <span class="badge" [attr.data-status]="item.status">{{ item.status }}</span>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="8" class="empty">Nenhum risco registrado na planilha.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
