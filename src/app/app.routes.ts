@@ -32,8 +32,8 @@ export const routes: Routes = [
       },
       {
         path: 'evolucao',
-        loadComponent: () =>
-          import('./pages/evolucao/evolucao').then((m) => m.EvolucaoComponent),
+        redirectTo: '',
+        pathMatch: 'full',
       },
       {
         path: 'bizagi',

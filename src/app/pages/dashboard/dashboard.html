@@ -1,29 +1,17 @@
 @let resumo = projeto.resumo();
-@let totais = resumo.totais;
 @let t = tarefas();
 
 <section class="hero">
   <div>
-    <p class="hero__label">Thomson Reuters · Sprint Review</p>
-    <h2>{{ resumo.titulo }}</h2>
-    <p class="hero__text">{{ resumo.subtitulo }}</p>
-  </div>
-  <div class="hero__meta">
-    <div>
-      <span>Sprints no resumo</span>
-      <strong>{{ totais.sprintsNoResumo }}</strong>
-    </div>
-    <div>
-      <span>Aderência</span>
-      <strong>{{ totais.aderencia }}</strong>
-    </div>
+    <p class="hero__label">{{ portal.produtoCompleto }} · Cliente {{ projetoInfo.cliente }}</p>
+    <h2>{{ projetoInfo.nome }}</h2>
+    <p class="hero__lead">{{ projetoInfo.descricao }}</p>
   </div>
 </section>
 
 <section class="panel chart-panel">
   <div class="panel__head">
     <h3>Desenvolvidas × a desenvolver</h3>
-    <a routerLink="/evolucao">Ver evolução</a>
   </div>
   <p class="chart-panel__hint">
     Conforme a aba <strong>Evolução do Projeto</strong> da planilha (planejadas × entregues).
@@ -87,72 +75,75 @@
 
 <section class="panel">
   <div class="panel__head">
-    <h3>Desempenho por sprint</h3>
+    <h3>Evolução por sprint</h3>
   </div>
+  <p class="chart-panel__hint">Planejado × desenvolvidas × acumulado.</p>
   <div class="table-wrap">
     <table>
       <thead>
         <tr>
           <th>Sprint</th>
-          <th>Planejados</th>
-          <th>Concluídos</th>
-          <th>% Concluído</th>
-          <th>Status</th>
-          <th>Período</th>
+          <th>Planejadas</th>
+          <th>Desenvolvidas na sprint</th>
+          <th>Desenvolvidas acumuladas</th>
+          <th>Situação</th>
         </tr>
       </thead>
       <tbody>
-        @for (s of resumo.desempenho; track s.sprint) {
+        @for (s of projeto.evolucao(); track s.sprint) {
           <tr>
             <td>{{ s.sprint }}</td>
-            <td>{{ s.planejados }}</td>
-            <td>{{ s.concluidos }}</td>
-            <td>{{ s.percentual }}</td>
-            <td><span class="pill">{{ s.status }}</span></td>
-            <td>{{ s.periodo }}</td>
+            <td>{{ s.planejadas }}</td>
+            <td>{{ s.entregues == null ? '—' : s.entregues }}</td>
+            <td>{{ s.acumuladas }}</td>
+            <td>
+              @if (s.entregues == null) {
+                <span class="pill pill--pending">Pendente</span>
+              } @else if (s.entregues >= s.planejadas) {
+                <span class="pill pill--ok">Concluída</span>
+              } @else {
+                <span class="pill pill--wip">Parcial</span>
+              }
+            </td>
           </tr>
         }
       </tbody>
     </table>
   </div>
+
+  <div class="bars">
+    @for (s of projeto.evolucao(); track s.sprint) {
+      <div class="bar-row">
+        <div class="bar-row__label">{{ s.sprint }}</div>
+        <div class="bar-row__track">
+          <div class="bar-row__fill" [style.width.%]="percentualSprint(s.planejadas, s.entregues)"></div>
+        </div>
+        <div class="bar-row__value">{{ s.entregues ?? 0 }}/{{ s.planejadas }}</div>
+      </div>
+    }
+  </div>
+
   @if (resumo.observacao) {
     <p class="note">{{ resumo.observacao }}</p>
   }
 </section>
 
-<section class="panel panel--wide">
-  <div class="panel__head">
-    <h3>Pendências e decisões</h3>
-    <a routerLink="/pendencias">Ver todas</a>
-  </div>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Tema</th>
-          <th>Pergunta / Decisão</th>
-          <th>Responsável</th>
-          <th>Status</th>
-          <th>Impacto</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (p of projeto.pendencias(); track p.id) {
-          <tr>
-            <td class="id">{{ p.id }}</td>
-            <td>{{ p.tema }}</td>
-            <td class="desc">{{ p.pergunta }}</td>
-            <td>{{ p.responsavel }}</td>
-            <td>{{ p.status }}</td>
-            <td>{{ p.impacto }}</td>
-          </tr>
-        } @empty {
-          <tr>
-            <td colspan="6" class="empty">Nenhuma pendência registrada.</td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  </div>
+<section class="nav-cards">
+  <a routerLink="/pendencias" class="nav-card nav-card--pendencias">
+    <div class="nav-card__top">
+      <h3>Pendências &amp; decisões</h3>
+      <span class="nav-card__count">{{ projeto.pendencias().length }}</span>
+    </div>
+    <p>Itens que dependem de alinhamento com a Thomson Reuters.</p>
+    <span class="nav-card__cta">Ver pendências →</span>
+  </a>
+
+  <a routerLink="/riscos" class="nav-card nav-card--riscos">
+    <div class="nav-card__top">
+      <h3>Riscos</h3>
+      <span class="nav-card__count">{{ projeto.riscos().length }}</span>
+    </div>
+    <p>Ameaças que podem impactar prazo, escopo ou qualidade do projeto.</p>
+    <span class="nav-card__cta">Ver riscos →</span>
+  </a>
 </section>

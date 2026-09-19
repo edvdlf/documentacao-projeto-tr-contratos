@@ -4,8 +4,8 @@
       <div class="sidebar__brand">
         <span class="sidebar__mark" aria-hidden="true"></span>
         <div class="sidebar__brand-text">
-          <p class="sidebar__eyebrow">Thomson Reuters</p>
-          <p class="sidebar__title">Contratos · Docs</p>
+          <p class="sidebar__eyebrow">{{ portal.fornecedor }}</p>
+          <p class="sidebar__title">{{ portal.produto }}</p>
         </div>
       </div>
 
@@ -19,6 +19,8 @@
         <span aria-hidden="true">{{ collapsed() ? '»' : '«' }}</span>
       </button>
     </div>
+
+    <p class="sidebar__product" title="{{ portal.tagline }}">{{ portal.tagline }}</p>
 
     <nav class="sidebar__nav" aria-label="Principal">
       <a
@@ -46,26 +48,29 @@
         <span class="sidebar__icon" aria-hidden="true">!</span>
         <span class="sidebar__label">Riscos</span>
       </a>
-      <a routerLink="/evolucao" routerLinkActive="is-active" title="Evolução">
-        <span class="sidebar__icon" aria-hidden="true">V</span>
-        <span class="sidebar__label">Evolução</span>
-      </a>
       <a routerLink="/bizagi" routerLinkActive="is-active" title="Fluxos Bizagi">
         <span class="sidebar__icon" aria-hidden="true">F</span>
         <span class="sidebar__label">Fluxos Bizagi</span>
       </a>
     </nav>
 
-    <p class="sidebar__foot">Fonte: Sprint Review · Controle de Entregas</p>
+    <div class="sidebar__foot">
+      <p class="sidebar__foot-label">Projeto em acompanhamento</p>
+      <p class="sidebar__foot-project">{{ projetoInfo.nomeCurto }}</p>
+      <p class="sidebar__foot-client">Cliente · {{ projetoInfo.cliente }}</p>
+    </div>
   </aside>
 
   <div class="shell__main">
     <header class="topbar">
       <div>
-        <p class="topbar__kicker">Sprint Review · Controle de entregas</p>
-        <h1 class="topbar__heading">Sistema de Gestão de Contratos</h1>
+        <p class="topbar__kicker">{{ portal.produtoCompleto }} · {{ portal.tagline }}</p>
+        <h1 class="topbar__heading">{{ projetoInfo.nome }}</h1>
       </div>
-      <div class="topbar__badge">Cliente · Thomson Reuters</div>
+      <div class="topbar__meta">
+        <span class="topbar__badge topbar__badge--vendor">{{ portal.fornecedor }}</span>
+        <span class="topbar__badge">Cliente · {{ projetoInfo.cliente }}</span>
+      </div>
     </header>
 
     <main class="content">
@@ -73,11 +78,14 @@
     </main>
 
     <footer class="footer">
-      <span>© {{ ano }} · Documentação do projeto TR Contratos</span>
-        <span
-          >Edite e salve <code>conteudo/Sprint_Review_Controle_Entregas.xlsx</code>, depois
-          reinicie o <code>npm start</code></span
-        >
+      <span
+        >© {{ ano }} {{ portal.fornecedor }} · Projeto {{ projetoInfo.nomeCurto }} para
+        {{ projetoInfo.cliente }}</span
+      >
+      <span
+        >Atualize <code>conteudo/Sprint_Review_Controle_Entregas.xlsx</code> e reinicie o
+        <code>npm start</code></span
+      >
     </footer>
   </div>
 </div>

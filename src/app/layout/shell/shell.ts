@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { PORTAL, PROJETO } from '../../data/projeto.identidade';
 import { ProjetoService } from '../../services/projeto.service';
 
 const STORAGE_KEY = 'docs-tr-sidebar-collapsed';
@@ -12,6 +13,8 @@ const STORAGE_KEY = 'docs-tr-sidebar-collapsed';
 })
 export class ShellComponent {
   readonly ano = new Date().getFullYear();
+  readonly portal = PORTAL;
+  readonly projetoInfo = PROJETO;
   readonly projeto = inject(ProjetoService);
 
   readonly collapsed = signal(this.readStoredCollapsed());

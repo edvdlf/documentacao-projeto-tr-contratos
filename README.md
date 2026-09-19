@@ -1,6 +1,8 @@
-# Documentação · TR Contratos
+# Portal de Projetos VetorIT · Gestão de Contratos
 
-Painel Angular estático (Vercel) alimentado pela planilha **Sprint Review · Controle de Entregas**.
+Portal de Projetos VetorIT de acompanhamento do projeto **Sistema de Gestão de Contratos**, desenvolvido pela VetorIT para a **Thomson Reuters**.
+
+Alimentado pela planilha Sprint Review · Controle de Entregas.
 
 ## Fonte única de dados
 
@@ -17,7 +19,7 @@ Abas usadas:
 | Próxima Sprint | Próxima Sprint |
 | Pendências e Decisões | Pendências |
 | Riscos | Riscos |
-| Evolução do Projeto | Evolução |
+| Evolução do Projeto | Resumo (gráfico + evolução por sprint) |
 | Fluxos Bizagi | Fluxos Bizagi |
 
 ### Aba Fluxos Bizagi

@@ -1,5 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { PORTAL, PROJETO } from '../../data/projeto.identidade';
 import { ProjetoService } from '../../services/projeto.service';
 
 @Component({
@@ -9,6 +10,8 @@ import { ProjetoService } from '../../services/projeto.service';
   styleUrl: './dashboard.scss',
 })
 export class DashboardComponent {
+  readonly portal = PORTAL;
+  readonly projetoInfo = PROJETO;
   readonly projeto = inject(ProjetoService);
 
   readonly tarefas = computed(() => this.projeto.resumoTarefas());
@@ -21,4 +24,9 @@ export class DashboardComponent {
     const len = (t.desenvolvidas / t.planejadoTotal) * this.circunferencia;
     return `${len} ${this.circunferencia}`;
   });
+
+  percentualSprint(planejadas: number, entregues: number | null): number {
+    if (!planejadas) return 0;
+    return Math.min(100, ((entregues ?? 0) / planejadas) * 100);
+  }
 }
