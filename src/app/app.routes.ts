@@ -41,7 +41,7 @@ export const routes: Routes = [
       },
       {
         path: 'bizagi/:id',
-        loadComponent: () => import('./pages/bizagi/bizagi').then((m) => m.BizagiComponent),
+        redirectTo: '/bizagi',
       },
     ],
   },

@@ -182,6 +182,26 @@ function normalizarImagem(valor: string, id: string): string {
   return `/fluxos/${raw.replace(/^fluxos\//i, '')}`;
 }
 
+function parsePassos(valor: string): string[] {
+  const raw = valor.trim().replace(/\\n/g, '\n');
+  if (!raw) return [];
+
+  const partes = /[\r\n]/.test(raw) ? raw.split(/\r?\n/) : raw.split('|');
+  const isEstruturado =
+    /feature\s*:|scenario\s*:|\b(given|when|then)\b|caso de uso\s*:|objetivo|gatilho|fluxo principal/i.test(
+      raw,
+    );
+
+  if (isEstruturado) {
+    // Preserva linhas em branco e numeração do descritivo estruturado
+    return partes.map((p) => p.replace(/\s+$/, ''));
+  }
+
+  return partes
+    .map((p) => p.replace(/^\s*\d+[\).:\-]\s*/, '').trim())
+    .filter(Boolean);
+}
+
 function statusVisivel(status: string): boolean {
   const s = status.trim().toLowerCase();
   if (!s) return true;
@@ -201,6 +221,14 @@ function parseFluxos(rows: SheetMatrix): FluxoBizagi[] {
   const iImg = colIndex(header, 'imagem', 'arquivo', 'png');
   const iStatus = colIndex(header, 'status', 'situação', 'situacao');
   const iAtualizado = colIndex(header, 'atualizadoem', 'atualizado em', 'atualizado');
+  const iPassos = colIndex(
+    header,
+    'passo a passo',
+    'passos',
+    'passoapasso',
+    'descritivo',
+    'etapas',
+  );
 
   if (iSeq < 0 || iId < 0 || iNome < 0) return [];
 
@@ -223,6 +251,7 @@ function parseFluxos(rows: SheetMatrix): FluxoBizagi[] {
       imagem: normalizarImagem(iImg >= 0 ? cell(row, iImg) : '', id),
       status,
       atualizadoEm: iAtualizado >= 0 ? cell(row, iAtualizado) : '',
+      passos: iPassos >= 0 ? parsePassos(cell(row, iPassos)) : [],
     });
   }
 

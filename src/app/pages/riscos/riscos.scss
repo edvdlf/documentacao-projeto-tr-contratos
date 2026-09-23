@@ -94,7 +94,9 @@ th {
 }
 
 .badge[data-status='Mitigado'],
-.badge[data-status='Encerrado'] {
+.badge[data-status='Encerrado'],
+.badge[data-status='Resolvido'],
+.badge[data-status='resolvido'] {
   background: color-mix(in srgb, var(--success) 16%, white);
   color: var(--success);
 }

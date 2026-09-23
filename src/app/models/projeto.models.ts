@@ -7,6 +7,8 @@ export interface FluxoBizagi {
   imagem: string;
   status: string;
   atualizadoEm: string;
+  /** Passo a passo do fluxo (linha expandida na tabela) */
+  passos: string[];
 }
 
 export interface ResumoTotais {
