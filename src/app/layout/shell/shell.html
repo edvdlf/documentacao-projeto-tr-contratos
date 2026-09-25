@@ -52,6 +52,12 @@
         <span class="sidebar__icon" aria-hidden="true">F</span>
         <span class="sidebar__label">Fluxos Bizagi</span>
       </a>
+      @if (auth.isAdmin()) {
+        <a routerLink="/admin/acessos" routerLinkActive="is-active" title="Histórico de acessos">
+          <span class="sidebar__icon" aria-hidden="true">A</span>
+          <span class="sidebar__label">Acessos</span>
+        </a>
+      }
     </nav>
 
     <div class="sidebar__foot">
@@ -70,6 +76,12 @@
       <div class="topbar__meta">
         <span class="topbar__badge topbar__badge--vendor">{{ portal.fornecedor }}</span>
         <span class="topbar__badge">Cliente · {{ projetoInfo.cliente }}</span>
+        @if (auth.user(); as user) {
+          <span class="topbar__badge topbar__badge--user" [title]="user.usuario">{{
+            user.nome
+          }}</span>
+          <button type="button" class="topbar__logout" (click)="logout()">Sair</button>
+        }
       </div>
     </header>
 

@@ -280,6 +280,30 @@
   border-color: rgba(255, 255, 255, 0.35);
 }
 
+.topbar__badge--user {
+  background: rgba(0, 0, 0, 0.28);
+  max-width: 12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topbar__logout {
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.18);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.45rem 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.topbar__logout:hover {
+  background: rgba(0, 0, 0, 0.32);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
 .content {
   flex: 1;
   padding: 1.5rem 1.75rem 2rem;

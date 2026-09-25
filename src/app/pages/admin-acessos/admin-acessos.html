@@ -1,0 +1,43 @@
+<section class="page-head">
+  <div class="page-head__row">
+    <div>
+      <h2>Histórico de acessos</h2>
+      <p>
+        Logins registrados neste navegador ({{ total() }}
+        {{ total() === 1 ? 'registro' : 'registros' }}).
+      </p>
+    </div>
+    @if (total() > 0) {
+      <button type="button" class="btn-clear" (click)="limpar()">Limpar histórico</button>
+    }
+  </div>
+</section>
+
+<div class="table-wrap panel">
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Usuário</th>
+        <th>Nome</th>
+        <th>Data</th>
+        <th>Hora</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (a of acessos(); track a.id; let i = $index) {
+        <tr>
+          <td class="id">{{ total() - i }}</td>
+          <td class="nome">{{ a.usuario }}</td>
+          <td>{{ a.nome }}</td>
+          <td>{{ a.ocorridoEm | date: 'dd/MM/yyyy' }}</td>
+          <td>{{ a.ocorridoEm | date: 'HH:mm:ss' }}</td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="5" class="empty">Nenhum acesso registrado ainda.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

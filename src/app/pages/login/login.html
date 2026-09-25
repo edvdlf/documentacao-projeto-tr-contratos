@@ -1,0 +1,55 @@
+<div class="login">
+  <div class="login__panel">
+    <div class="login__brand">
+      <span class="login__mark" aria-hidden="true"></span>
+      <div>
+        <p class="login__eyebrow">{{ portal.fornecedor }}</p>
+        <h1 class="login__title">{{ portal.produto }}</h1>
+        <p class="login__tagline">{{ portal.tagline }}</p>
+      </div>
+    </div>
+
+    <p class="login__project">
+      Acesso ao acompanhamento de
+      <strong>{{ projetoInfo.nome }}</strong>
+      · {{ projetoInfo.cliente }}
+    </p>
+
+    <form class="login__form" (ngSubmit)="onSubmit()" autocomplete="on">
+      <label class="login__field">
+        <span>Usuário</span>
+        <input
+          type="text"
+          name="usuario"
+          [(ngModel)]="usuario"
+          required
+          autofocus
+          autocomplete="username"
+          placeholder="Digite seu usuário"
+        />
+      </label>
+
+      <label class="login__field">
+        <span>Senha</span>
+        <input
+          type="password"
+          name="senha"
+          [(ngModel)]="senha"
+          required
+          autocomplete="current-password"
+          placeholder="Digite sua senha"
+        />
+      </label>
+
+      @if (erro()) {
+        <p class="login__error" role="alert">Usuário ou senha inválidos.</p>
+      }
+
+      <button type="submit" class="login__submit" [disabled]="submetendo()">
+        Entrar
+      </button>
+    </form>
+
+    <p class="login__hint">Acesso restrito a usuários autorizados do projeto.</p>
+  </div>
+</div>

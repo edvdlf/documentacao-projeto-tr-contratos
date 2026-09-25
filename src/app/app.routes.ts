@@ -1,10 +1,17 @@
 import { Routes } from '@angular/router';
+import { adminGuard, authGuard, guestGuard } from './guards/auth.guard';
 import { ShellComponent } from './layout/shell/shell';
 
 export const routes: Routes = [
   {
+    path: 'login',
+    canActivate: [guestGuard],
+    loadComponent: () => import('./pages/login/login').then((m) => m.LoginComponent),
+  },
+  {
     path: '',
     component: ShellComponent,
+    canActivate: [authGuard],
     children: [
       {
         path: '',
@@ -42,6 +49,12 @@ export const routes: Routes = [
       {
         path: 'bizagi/:id',
         redirectTo: '/bizagi',
+      },
+      {
+        path: 'admin/acessos',
+        canActivate: [adminGuard],
+        loadComponent: () =>
+          import('./pages/admin-acessos/admin-acessos').then((m) => m.AdminAcessosComponent),
       },
     ],
   },

@@ -1,0 +1,85 @@
+.page-head h2 {
+  margin: 0 0 0.35rem;
+}
+
+.page-head p {
+  margin: 0;
+  color: var(--dove);
+  max-width: 48rem;
+  line-height: 1.45;
+}
+
+.page-head__row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn-clear {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--dove);
+  border-radius: 8px;
+  padding: 0.45rem 0.85rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.btn-clear:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.5rem 0.85rem 0.85rem;
+}
+
+.table-wrap {
+  overflow: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.55rem 0.4rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+th {
+  color: var(--dove);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.id {
+  font-weight: 700;
+  color: var(--tundora);
+  white-space: nowrap;
+}
+
+.nome {
+  font-weight: 600;
+  color: var(--tundora);
+  min-width: 8rem;
+}
+
+.empty {
+  color: var(--dove);
+  text-align: center;
+  padding: 1.25rem 0.5rem;
+}

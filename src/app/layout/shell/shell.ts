@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { PORTAL, PROJETO } from '../../data/projeto.identidade';
+import { AuthService } from '../../services/auth.service';
 import { ProjetoService } from '../../services/projeto.service';
 
 const STORAGE_KEY = 'docs-tr-sidebar-collapsed';
@@ -16,6 +17,8 @@ export class ShellComponent {
   readonly portal = PORTAL;
   readonly projetoInfo = PROJETO;
   readonly projeto = inject(ProjetoService);
+  readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
 
   readonly collapsed = signal(this.readStoredCollapsed());
 
@@ -23,6 +26,11 @@ export class ShellComponent {
     const next = !this.collapsed();
     this.collapsed.set(next);
     this.persistCollapsed(next);
+  }
+
+  logout(): void {
+    this.auth.logout();
+    void this.router.navigateByUrl('/login');
   }
 
   private readStoredCollapsed(): boolean {
