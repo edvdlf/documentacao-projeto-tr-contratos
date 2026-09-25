@@ -21,13 +21,56 @@ const STORAGE_KEY = 'docs-tr-auth-user';
 const HISTORY_KEY = 'docs-tr-login-history';
 const HISTORY_LIMIT = 500;
 
+/** Logins com acesso à área admin (histórico de acessos). */
+const ADMIN_USUARIOS = [
+  'michel.paiva@vetorit.com.br',
+  'edvaldo.silva@vetorit.com.br',
+  'henrique.pontes@vetorit.com.br',
+  'aline.melo@vetorit.com.br',
+];
+
 /** Usuários e senhas fixos — acesso restrito simples (não é autenticação de produção). */
 const USUARIOS_FIXOS: FixedCredential[] = [
-  { usuario: 'admin', senha: 'Admin@2024', nome: 'Administrador' },
-  { usuario: 'gestao', senha: 'Gestao@2024', nome: 'Gestão do Projeto' },
-  { usuario: 'analista', senha: 'Analista@2024', nome: 'Analista VetorIT' },
-  { usuario: 'cliente', senha: 'Cliente@2024', nome: 'Cliente TR' },
-  { usuario: 'viewer', senha: 'Viewer@2024', nome: 'Visualização' },
+  { usuario: 'admin', senha: 'Admin@2026', nome: 'Administrador' },
+  { usuario: 'gestao', senha: 'Gestao@2026', nome: 'Gestão do Projeto' },
+  { usuario: 'analista', senha: 'Analista@2026', nome: 'Analista VetorIT' },
+  { usuario: 'cliente', senha: 'Cliente@2026', nome: 'Cliente TR' },
+  { usuario: 'viewer', senha: 'Viewer@2026', nome: 'Visualização' },
+  {
+    usuario: 'carlos.zeglio@thomsonreuters.com',
+    senha: 'Carlos@2026',
+    nome: 'Carlos Zeglio',
+  },
+  {
+    usuario: 'sheila.morais@thomsonreuters.com',
+    senha: 'Sheila@2026',
+    nome: 'Sheila Morais',
+  },
+  {
+    usuario: 'jaqueline.c.rodrigues@thomsonreuters.com',
+    senha: 'Jaqueline@2026',
+    nome: 'Jaqueline Rodrigues',
+  },
+  {
+    usuario: 'michel.paiva@vetorit.com.br',
+    senha: 'Michel@2026',
+    nome: 'Michel Paiva',
+  },
+  {
+    usuario: 'edvaldo.silva@vetorit.com.br',
+    senha: 'Edvaldo@2026',
+    nome: 'Edvaldo Silva',
+  },
+  {
+    usuario: 'henrique.pontes@vetorit.com.br',
+    senha: 'Henrique@2026',
+    nome: 'Henrique Pontes',
+  },
+  {
+    usuario: 'aline.melo@vetorit.com.br',
+    senha: 'Aline@2026',
+    nome: 'Aline Melo',
+  },
 ];
 
 @Injectable({ providedIn: 'root' })
@@ -37,7 +80,10 @@ export class AuthService {
 
   readonly user = this.usuarioAtual.asReadonly();
   readonly isAuthenticated = computed(() => this.usuarioAtual() !== null);
-  readonly isAdmin = computed(() => this.usuarioAtual()?.usuario === 'admin');
+  readonly isAdmin = computed(() => {
+    const u = this.usuarioAtual()?.usuario;
+    return !!u && ADMIN_USUARIOS.includes(u);
+  });
   readonly acessos = this.historicoAcessos.asReadonly();
 
   login(usuario: string, senha: string): boolean {
