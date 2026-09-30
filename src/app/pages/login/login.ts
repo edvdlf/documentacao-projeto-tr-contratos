@@ -21,6 +21,11 @@ export class LoginComponent {
   senha = '';
   readonly erro = signal(false);
   readonly submetendo = signal(false);
+  readonly senhaVisivel = signal(false);
+
+  alternarSenha(): void {
+    this.senhaVisivel.update((v) => !v);
+  }
 
   onSubmit(): void {
     this.erro.set(false);
