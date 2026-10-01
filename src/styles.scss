@@ -80,3 +80,12 @@ img {
   color: var(--danger) !important;
   border: 1px solid color-mix(in srgb, var(--danger) 35%, white);
 }
+
+/* Qualquer status em atraso ("Em atraso", "Atrasado", "Atrasada"...) em todas as páginas */
+.badge[data-status*='atras' i],
+.badge[data-status*='vencid' i] {
+  background: var(--danger) !important;
+  color: #ffffff !important;
+  border: 1px solid color-mix(in srgb, var(--danger) 80%, black) !important;
+  font-weight: 700;
+}
