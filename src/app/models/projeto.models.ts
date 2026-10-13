@@ -30,6 +30,26 @@ export interface EvolucaoSprint {
   acumuladas: number;
 }
 
+export interface BurndownSprint {
+  /** Nome curto, ex.: "Sprint 3". */
+  sprint: string;
+  /** Nome com o período, ex.: "Sprint 3 - 24.08.2026 a 04.09.2026". */
+  rotulo: string;
+  planejadas: number;
+  /** Nulo enquanto a sprint não começou a entregar. */
+  entregues: number | null;
+  /** Tarefas que deveriam restar ao fim da sprint se o planejado fosse cumprido. */
+  meta: number;
+  /** Tarefas que de fato restam ao fim da sprint; nulo enquanto ela não entregou. */
+  restante: number | null;
+}
+
+export interface Burndown {
+  /** Soma das tarefas planejadas de todas as sprints. */
+  total: number;
+  linhas: BurndownSprint[];
+}
+
 export interface DesempenhoSprint {
   /** Nome curto, ex.: "Sprint 3". */
   sprint: string;

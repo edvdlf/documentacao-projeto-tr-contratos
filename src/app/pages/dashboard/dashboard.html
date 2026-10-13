@@ -79,46 +79,73 @@
   </div>
 </section>
 
+@let b = projeto.burndown();
+
 <section class="panel">
   <div class="panel__head">
     <h3>Evolução por sprint</h3>
   </div>
-  <p class="chart-panel__hint">Planejado × desenvolvidas × acumulado.</p>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Sprint</th>
-          <th>Planejadas</th>
-          <th>Desenvolvidas na sprint</th>
-          <th>Desenvolvidas acumuladas</th>
-          <th>Situação</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (s of projeto.evolucao(); track $index) {
+  <p class="chart-panel__hint">
+    Planejado × desenvolvidas. <strong>Meta</strong> é o que deveria restar se cada sprint
+    entregasse o planejado; <strong>Restante</strong> é o que de fato falta entregar.
+  </p>
+
+  <div class="evolucao">
+    <div class="table-wrap">
+      <table class="evolucao__tabela">
+        <thead>
           <tr>
-            <td>{{ s.sprint }}</td>
-            <td>{{ s.planejadas }}</td>
-            <td>{{ s.entregues == null ? '—' : s.entregues }}</td>
-            <td>{{ s.acumuladas }}</td>
-            <td>
-              @if (s.entregues == null) {
-                <span class="pill pill--pending">Pendente</span>
-              } @else if (s.entregues >= s.planejadas) {
-                <span class="pill pill--ok">Concluída</span>
-              } @else {
-                <span class="pill pill--wip">Parcial</span>
-              }
-            </td>
+            <th>Sprint</th>
+            <th class="num">Planejadas</th>
+            <th class="num">Desenvolvidas</th>
+            <th class="num col-meta">Meta</th>
+            <th class="num col-restante">Restante</th>
+            <th>Situação</th>
           </tr>
-        } @empty {
-          <tr>
-            <td colspan="5">Nenhuma sprint cadastrada.</td>
-          </tr>
-        }
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          @if (b.linhas.length) {
+            <tr>
+              <td class="evolucao__sprint">Início</td>
+              <td class="num">—</td>
+              <td class="num">—</td>
+              <td class="num col-meta">{{ b.total }}</td>
+              <td class="num col-restante">{{ b.total }}</td>
+              <td></td>
+            </tr>
+          }
+          @for (s of b.linhas; track $index) {
+            <tr>
+              <td class="evolucao__sprint" [title]="s.rotulo">{{ s.sprint }}</td>
+              <td class="num">{{ s.planejadas }}</td>
+              <td class="num">{{ s.entregues ?? '—' }}</td>
+              <td class="num col-meta">{{ s.meta }}</td>
+              <td class="num col-restante">{{ s.restante ?? '—' }}</td>
+              <td>
+                @if (s.entregues == null) {
+                  <span class="pill pill--pending">Pendente</span>
+                } @else if (s.entregues >= s.planejadas) {
+                  <span class="pill pill--ok">Concluída</span>
+                } @else {
+                  <span class="pill pill--wip">Parcial</span>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6">Nenhuma sprint cadastrada.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (b.linhas.length) {
+      <div class="evolucao__grafico">
+        <h4 class="evolucao__titulo">Burndown</h4>
+        <app-burndown-grafico [dados]="b" />
+      </div>
+    }
   </div>
 
   <div class="bars">

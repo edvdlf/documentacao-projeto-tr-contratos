@@ -280,6 +280,67 @@ th {
   color: var(--info);
 }
 
+.evolucao {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: stretch;
+}
+
+.evolucao__tabela th,
+.evolucao__tabela td {
+  padding: 0.4rem 0.5rem;
+  vertical-align: middle;
+}
+
+.evolucao__tabela .num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.evolucao__sprint {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.evolucao__tabela th.col-meta {
+  background: color-mix(in srgb, #f0a500 45%, white);
+  color: var(--tundora);
+}
+
+.evolucao__tabela td.col-meta {
+  background: color-mix(in srgb, #f0a500 14%, white);
+}
+
+.evolucao__tabela th.col-restante {
+  background: color-mix(in srgb, #b04fc9 40%, white);
+  color: var(--tundora);
+}
+
+.evolucao__tabela td.col-restante {
+  background: color-mix(in srgb, #b04fc9 12%, white);
+}
+
+.evolucao__grafico {
+  display: flex;
+  flex-direction: column;
+  min-height: 320px;
+}
+
+.evolucao__grafico app-burndown-grafico {
+  flex: 1;
+  display: block;
+}
+
+.evolucao__titulo {
+  margin: 0 0 0.5rem;
+  font-size: 1.15rem;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--charcoal);
+}
+
 .bars {
   display: grid;
   gap: 0.65rem;
@@ -410,6 +471,12 @@ th {
   color: var(--dove);
   text-align: center;
   padding: 1rem 0.5rem;
+}
+
+@media (max-width: 1100px) {
+  .evolucao {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 800px) {

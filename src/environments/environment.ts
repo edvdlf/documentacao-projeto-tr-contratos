@@ -1,4 +1,4 @@
 export const environment = {
-  /** Vazio: a Vercel repassa /api e /fluxos para a API (ver rewrites em vercel.json), evitando Mixed Content. */
-  apiUrl: '',
+  /** URL base da API em produção (backend na Integrator Host). Ajuste antes do deploy na Vercel. */
+  apiUrl: 'http://localhost:8099',
 };

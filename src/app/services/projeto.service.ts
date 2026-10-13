@@ -13,6 +13,7 @@ import {
   rotuloStatus,
 } from '../models/admin.models';
 import {
+  Burndown,
   DesempenhoSprint,
   EvolucaoSprint,
   FluxoBizagi,
@@ -92,6 +93,28 @@ export class ProjetoService {
       acumuladas += entregues ?? 0;
       return { sprint: s.rotulo, planejadas: s.planejadas, entregues, acumuladas };
     });
+  });
+
+  /** Burndown do projeto: do total planejado, quanto deveria restar (meta) e quanto resta. */
+  readonly burndown = computed<Burndown>(() => {
+    const sprints = this.sprints();
+    const total = sprints.reduce((acc, s) => acc + s.planejadas, 0);
+    let meta = total;
+    let restante = total;
+    const linhas = sprints.map((s) => {
+      const entregues = semEntregas(s) ? null : s.executadas;
+      meta = Math.max(0, meta - s.planejadas);
+      if (entregues !== null) restante = Math.max(0, restante - entregues);
+      return {
+        sprint: s.nome,
+        rotulo: s.rotulo,
+        planejadas: s.planejadas,
+        entregues,
+        meta,
+        restante: entregues === null ? null : restante,
+      };
+    });
+    return { total, linhas };
   });
 
   /** Aba "Resumo da Sprint": desempenho de cada sprint e indicadores das já concluídas. */

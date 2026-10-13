@@ -2,10 +2,11 @@ import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { PORTAL } from '../../data/projeto.identidade';
 import { ProjetoService } from '../../services/projeto.service';
+import { BurndownGraficoComponent } from '../../shared/burndown-grafico/burndown-grafico';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [RouterLink],
+  imports: [RouterLink, BurndownGraficoComponent],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })
