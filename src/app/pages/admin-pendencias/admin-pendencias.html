@@ -1,0 +1,246 @@
+<section class="adm-head">
+  <div>
+    <h2>Pendências e decisões</h2>
+    <p>
+      Cadastre, edite, exclua, altere o status ou importe as pendências, dúvidas e decisões do
+      projeto. É o conteúdo da página Pendências do portal.
+    </p>
+  </div>
+  <div class="adm-actions">
+    <button
+      type="button"
+      class="adm-btn"
+      [disabled]="!projetoAtual()"
+      (click)="importando.set(!importando())"
+    >
+      Importar planilha
+    </button>
+    <button
+      type="button"
+      class="adm-btn adm-btn--primary"
+      [disabled]="!projetoAtual()"
+      (click)="nova()"
+    >
+      Nova pendência
+    </button>
+  </div>
+</section>
+
+<div class="adm-filters">
+  <app-seletor-projeto [projetoId]="projeto()" (projetoAlterado)="aoSelecionarProjeto($event)" />
+</div>
+
+@if (aviso(); as msg) {
+  <div class="adm-alert adm-alert--ok" role="status">{{ msg }}</div>
+}
+@if (erro(); as msg) {
+  <div class="adm-alert adm-alert--erro" role="alert">{{ msg }}</div>
+}
+
+@if (importando() && projetoAtual()) {
+  <app-importar-planilha
+    titulo="Importar pendências"
+    rotulo="pendência(s)"
+    [importar]="importar"
+    (importado)="carregar()"
+    (fechar)="importando.set(false)"
+  >
+    Envie a planilha Sprint Review com a aba <strong>Pendências e Decisões</strong> (colunas ID,
+    Tema, Pergunta / Decisão, Responsável, Prazo, Status e Impacto). A pendência é identificada
+    pelo <strong>ID</strong> (ex.: PD_01): reimportar atualiza em vez de duplicar.
+  </app-importar-planilha>
+}
+
+@if (emEdicao(); as alvo) {
+  <section class="adm-panel">
+    <h3>{{ alvo === 'nova' ? 'Nova pendência' : 'Editar pendência ' + alvo.codigo }}</h3>
+    @if (erroForm(); as msg) {
+      <div class="adm-alert adm-alert--erro" role="alert">{{ msg }}</div>
+    }
+    <form class="adm-form" (ngSubmit)="salvar()">
+      <label class="adm-field">
+        ID*
+        <input name="codigo" [(ngModel)]="form.codigo" required maxlength="50" placeholder="Ex.: PD_08" />
+        @if (errosForm()['codigo']; as e) {
+          <span class="adm-field__erro">{{ e }}</span>
+        }
+      </label>
+      <label class="adm-field">
+        Tema*
+        <input name="tema" [(ngModel)]="form.tema" required maxlength="200" />
+        @if (errosForm()['tema']; as e) {
+          <span class="adm-field__erro">{{ e }}</span>
+        }
+      </label>
+      <label class="adm-field">
+        Responsável
+        <input name="responsavel" [(ngModel)]="form.responsavel" maxlength="200" />
+      </label>
+      <label class="adm-field">
+        Prazo
+        <input type="date" name="prazo" [(ngModel)]="form.prazo" />
+      </label>
+      <label class="adm-field">
+        Status
+        <select name="status" [(ngModel)]="form.status">
+          @for (s of statusOpcoes; track s.valor) {
+            <option [value]="s.valor">{{ s.rotulo }}</option>
+          }
+        </select>
+      </label>
+      <label class="adm-field">
+        Impacto
+        <select name="impacto" [(ngModel)]="form.impacto">
+          <option value="">Não informado</option>
+          @for (n of niveis; track n.valor) {
+            <option [value]="n.valor">{{ n.rotulo }}</option>
+          }
+        </select>
+      </label>
+      <label class="adm-field adm-field--wide">
+        Pergunta / decisão
+        <textarea name="pergunta" [(ngModel)]="form.pergunta" rows="3"></textarea>
+      </label>
+      <div class="adm-form__foot">
+        <button type="button" class="adm-btn" (click)="cancelar()">Cancelar</button>
+        <button type="submit" class="adm-btn adm-btn--primary" [disabled]="salvando()">
+          {{ salvando() ? 'Salvando…' : 'Salvar' }}
+        </button>
+      </div>
+    </form>
+  </section>
+}
+
+<form class="adm-filters" (ngSubmit)="filtrar()">
+  <label class="adm-field">
+    Buscar
+    <input name="q" [(ngModel)]="filtros.q" placeholder="ID, tema, pergunta ou responsável" />
+  </label>
+  <label class="adm-field">
+    Status
+    <select
+      name="filtroStatus"
+      [ngModel]="filtros.status"
+      (ngModelChange)="filtros.status = $event; filtrar()"
+    >
+      <option value="">Todos</option>
+      @for (s of statusOpcoes; track s.valor) {
+        <option [value]="s.valor">{{ s.rotulo }}</option>
+      }
+    </select>
+  </label>
+  <label class="adm-field">
+    Ordenar por
+    <select
+      name="sort"
+      [ngModel]="listagem().sort"
+      (ngModelChange)="alterarListagem({ sort: $event })"
+    >
+      @for (o of ordenacoes; track o.valor) {
+        <option [value]="o.valor">{{ o.rotulo }}</option>
+      }
+    </select>
+  </label>
+  <label class="adm-field">
+    Direção
+    <select
+      name="direction"
+      [ngModel]="listagem().direction"
+      (ngModelChange)="alterarListagem({ direction: $event })"
+    >
+      <option value="ASC">Crescente</option>
+      <option value="DESC">Decrescente</option>
+    </select>
+  </label>
+  <button type="submit" class="adm-btn" [disabled]="!projetoAtual()">Filtrar</button>
+</form>
+
+<div class="adm-table">
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Tema</th>
+        <th>Responsável</th>
+        <th>Prazo</th>
+        <th>Impacto</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (p of pagina()?.content ?? []; track p.id) {
+        <tr>
+          <td class="adm-table__strong">{{ p.codigo }}</td>
+          <td>
+            {{ p.tema }}
+            @if (p.pergunta) {
+              <br /><small class="adm-dica">{{ p.pergunta }}</small>
+            }
+          </td>
+          <td>{{ p.responsavel || '-' }}</td>
+          <td>{{ dataBr(p.prazo) }}</td>
+          <td>{{ rotuloNivel(p.impacto) || '-' }}</td>
+          <td>
+            <select
+              class="adm-badge"
+              [attr.data-tom]="tomStatus(p.status)"
+              [attr.aria-label]="'Status da pendência ' + p.codigo"
+              [ngModel]="p.status"
+              (ngModelChange)="alterarStatus(p, $event)"
+            >
+              @for (o of statusOpcoes; track o.valor) {
+                <option [value]="o.valor">{{ o.rotulo }}</option>
+              }
+            </select>
+          </td>
+          <td class="adm-table__acoes">
+            <button type="button" class="adm-btn adm-btn--sm" (click)="editar(p)">Editar</button>
+            <button type="button" class="adm-btn adm-btn--sm adm-btn--danger" (click)="excluir(p)">
+              Excluir
+            </button>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="7" class="adm-table__vazio">
+            @if (!projetoAtual()) {
+              Selecione um projeto.
+            } @else {
+              {{ carregando() ? 'Carregando…' : 'Nenhuma pendência encontrada.' }}
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  @if (pagina(); as p) {
+    @if (p.page.totalElements > 0) {
+      <div class="adm-pager">
+        <span
+          >Página {{ p.page.number + 1 }} de {{ p.page.totalPages }} ·
+          {{ p.page.totalElements }} pendência(s)</span
+        >
+        <div class="adm-actions">
+          <button
+            type="button"
+            class="adm-btn adm-btn--sm"
+            [disabled]="p.page.number === 0"
+            (click)="irParaPagina(p.page.number - 1)"
+          >
+            Anterior
+          </button>
+          <button
+            type="button"
+            class="adm-btn adm-btn--sm"
+            [disabled]="p.page.number + 1 >= p.page.totalPages"
+            (click)="irParaPagina(p.page.number + 1)"
+          >
+            Próxima
+          </button>
+        </div>
+      </div>
+    }
+  }
+</div>

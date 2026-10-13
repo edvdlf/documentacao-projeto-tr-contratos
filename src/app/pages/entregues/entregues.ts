@@ -10,6 +10,10 @@ export class EntreguesComponent {
   readonly projeto = inject(ProjetoService);
   readonly sprintFiltro = signal<string>('todas');
 
+  constructor() {
+    void this.projeto.atualizar();
+  }
+
   readonly filtrados = computed(() => {
     const sprint = this.sprintFiltro();
     const itens = this.projeto.entregues();

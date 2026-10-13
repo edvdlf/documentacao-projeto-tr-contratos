@@ -1,0 +1,92 @@
+@let r = projeto.resumoSprints();
+
+<section class="page-head">
+  <div>
+    <h2>Resumo das sprints</h2>
+    <p>
+      Visão executiva do desempenho por sprint: tarefas planejadas × concluídas
+      @if (projeto.projetoAtual(); as info) {
+        no projeto {{ info.nome }}
+      }.
+    </p>
+  </div>
+  @if (auth.isAdmin()) {
+    <a
+      class="page-head__acao"
+      routerLink="/admin/sprints"
+      [queryParams]="{ projeto: projeto.projetoAtual()?.id }"
+      >Editar sprints</a
+    >
+  }
+</section>
+
+<section class="kpis" aria-label="Indicadores das sprints concluídas">
+  <div class="kpi">
+    <span class="kpi__rotulo">Sprints concluídas</span>
+    <strong class="kpi__valor">{{ r.sprintsConcluidas }}</strong>
+    <span class="kpi__dica">de {{ r.totalSprints }} sprint(s)</span>
+  </div>
+  <div class="kpi">
+    <span class="kpi__rotulo">Itens planejados</span>
+    <strong class="kpi__valor">{{ r.planejadas }}</strong>
+    <span class="kpi__dica">nas sprints concluídas</span>
+  </div>
+  <div class="kpi">
+    <span class="kpi__rotulo">Itens entregues</span>
+    <strong class="kpi__valor">{{ r.entregues }}</strong>
+    <span class="kpi__dica">nas sprints concluídas</span>
+  </div>
+  <div class="kpi kpi--destaque">
+    <span class="kpi__rotulo">Aderência</span>
+    <strong class="kpi__valor">{{ r.aderencia === null ? '—' : r.aderencia + '%' }}</strong>
+    <span class="kpi__dica">entregues ÷ planejados</span>
+  </div>
+</section>
+
+<div class="table-wrap panel">
+  <h3>Desempenho por sprint</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Sprint</th>
+        <th>Período</th>
+        <th>Planejadas</th>
+        <th>Concluídas</th>
+        <th>% concluído</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (s of r.linhas; track $index) {
+        <tr>
+          <td class="nome">{{ s.sprint }}</td>
+          <td class="periodo">{{ s.periodo || '—' }}</td>
+          <td>{{ s.planejadas }}</td>
+          <td>{{ s.concluidas ?? '—' }}</td>
+          <td class="percentual">
+            @if (s.percentual !== null) {
+              <div class="percentual__conteudo">
+                <div class="barra" role="img" [attr.aria-label]="s.percentual + '% concluído'">
+                  <div
+                    class="barra__fill"
+                    [style.width.%]="s.percentual > 100 ? 100 : s.percentual"
+                  ></div>
+                </div>
+                <span>{{ s.percentual }}%</span>
+              </div>
+            } @else {
+              —
+            }
+          </td>
+          <td>
+            <span class="badge" [attr.data-tom]="s.tom">{{ s.status }}</span>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="6" class="empty">Nenhuma sprint cadastrada.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

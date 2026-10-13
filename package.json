@@ -4,11 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve --o --port 4200",
-    "prestart": "npm run sync:conteudo",
     "build": "ng build",
-    "prebuild": "npm run sync:conteudo",
-    "sync:conteudo": "node scripts/sync-conteudo.mjs",
-    "seed:conteudo": "node -e \"console.log('Use a planilha real em conteudo/Sprint_Review_Controle_Entregas.xlsx')\"",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
@@ -34,7 +30,6 @@
     "@angular/router": "^20.3.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
-    "xlsx": "^0.18.5",
     "zone.js": "~0.15.0"
   },
   "devDependencies": {

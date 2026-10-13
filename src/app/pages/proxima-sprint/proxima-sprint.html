@@ -1,13 +1,29 @@
+@let proxima = projeto.proximaSprint();
+
 <section class="page-head">
-  <h2>Planejamento da próxima sprint</h2>
-  <p>
-    Itens da aba “Próxima Sprint”
-    @if (projeto.proximaSprint()[0]?.sprint; as sprint) {
-      — {{ sprint }}
-    }
-    ({{ projeto.proximaSprint().length }} itens).
-  </p>
+  <div>
+    <h2>Planejamento da próxima sprint</h2>
+    <p>
+      @if (proxima) {
+        {{ proxima.rotulo }} ({{ proxima.itens.length }} itens).
+      } @else {
+        Nenhuma sprint pendente cadastrada.
+      }
+    </p>
+  </div>
+  @if (auth.isAdmin()) {
+    <a
+      class="page-head__acao"
+      routerLink="/admin/proxima-sprint"
+      [queryParams]="{ projeto: projeto.projetoAtual()?.id }"
+      >Adicionar itens</a
+    >
+  }
 </section>
+
+@if (proxima?.objetivo) {
+  <p class="objetivo"><strong>Objetivo:</strong> {{ proxima?.objetivo }}</p>
+}
 
 <div class="table-wrap panel">
   <table>
@@ -23,7 +39,7 @@
       </tr>
     </thead>
     <tbody>
-      @for (item of projeto.proximaSprint(); track item.id) {
+      @for (item of proxima?.itens ?? []; track $index) {
         <tr>
           <td class="id">{{ item.id }}</td>
           <td>{{ item.sprint }}</td>
@@ -31,7 +47,7 @@
           <td class="desc">{{ item.descricao }}</td>
           <td>{{ item.responsavel }}</td>
           <td>
-            <span class="badge" [attr.data-status]="item.status">{{ item.status }}</span>
+            <span class="badge" [attr.data-tom]="item.tom">{{ item.status }}</span>
           </td>
           <td>{{ item.observacoes || '—' }}</td>
         </tr>

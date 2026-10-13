@@ -1,106 +1,76 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { Observable, catchError, map, of, tap } from 'rxjs';
+import { environment } from '../../environments/environment';
+import { Pagina } from '../models/admin.models';
+
+export type PerfilUsuario = 'ADMIN' | 'USUARIO';
 
 export interface AuthUser {
+  id: string;
+  /** Login usado na API (antes chamado `usuario` nas telas). */
   usuario: string;
   nome: string;
+  perfil: PerfilUsuario;
 }
 
 export interface AcessoHistorico {
   id: string;
+  usuarioId: string | null;
   usuario: string;
   nome: string;
   /** ISO 8601 — data e hora do login */
   ocorridoEm: string;
 }
 
-interface FixedCredential extends AuthUser {
-  senha: string;
+interface LoginApiResponse {
+  id: string;
+  login: string;
+  nome: string;
+  perfil: PerfilUsuario;
 }
 
-const STORAGE_KEY = 'docs-tr-auth-user';
-const HISTORY_KEY = 'docs-tr-login-history';
-const HISTORY_LIMIT = 500;
+interface AcessoApiResponse {
+  id: string;
+  usuarioId: string | null;
+  login: string;
+  nome: string;
+  ocorridoEm: string;
+}
 
-/** Logins com acesso à área admin (histórico de acessos). */
-const ADMIN_USUARIOS = [
-  'michel.paiva@vetorit.com.br',
-  'edvaldo.silva@vetorit.com.br',
-  'henrique.pontes@vetorit.com.br',
-  'aline.melo@vetorit.com.br',
-];
-
-/** Usuários e senhas fixos — acesso restrito simples (não é autenticação de produção). */
-const USUARIOS_FIXOS: FixedCredential[] = [
-  { usuario: 'admin', senha: 'Admin@2026', nome: 'Administrador' },
-  { usuario: 'gestao', senha: 'Gestao@2026', nome: 'Gestão do Projeto' },
-  { usuario: 'analista', senha: 'Analista@2026', nome: 'Analista VetorIT' },
-  { usuario: 'cliente', senha: 'Cliente@2026', nome: 'Cliente TR' },
-  { usuario: 'viewer', senha: 'Viewer@2026', nome: 'Visualização' },
-  {
-    usuario: 'carlos.zeglio@thomsonreuters.com',
-    senha: 'Carlos@2026',
-    nome: 'Carlos Zeglio',
-  },
-  {
-    usuario: 'sheila.morais@thomsonreuters.com',
-    senha: 'Sheila@2026',
-    nome: 'Sheila Morais',
-  },
-  {
-    usuario: 'jaqueline.c.rodrigues@thomsonreuters.com',
-    senha: 'Jaqueline@2026',
-    nome: 'Jaqueline Rodrigues',
-  },
-  {
-    usuario: 'michel.paiva@vetorit.com.br',
-    senha: 'Michel@2026',
-    nome: 'Michel Paiva',
-  },
-  {
-    usuario: 'edvaldo.silva@vetorit.com.br',
-    senha: 'Edvaldo@2026',
-    nome: 'Edvaldo Silva',
-  },
-  {
-    usuario: 'henrique.pontes@vetorit.com.br',
-    senha: 'Henrique@2026',
-    nome: 'Henrique Pontes',
-  },
-  {
-    usuario: 'aline.melo@vetorit.com.br',
-    senha: 'Aline@2026',
-    nome: 'Aline Melo',
-  },
-];
+const STORAGE_KEY = 'vetorit.auth-user';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  private readonly http = inject(HttpClient);
+  private readonly base = `${environment.apiUrl}/api`;
+
   private readonly usuarioAtual = signal<AuthUser | null>(this.readStoredUser());
-  private readonly historicoAcessos = signal<AcessoHistorico[]>(this.readHistory());
 
   readonly user = this.usuarioAtual.asReadonly();
   readonly isAuthenticated = computed(() => this.usuarioAtual() !== null);
-  readonly isAdmin = computed(() => {
-    const u = this.usuarioAtual()?.usuario;
-    return !!u && ADMIN_USUARIOS.includes(u);
-  });
-  readonly acessos = this.historicoAcessos.asReadonly();
+  readonly isAdmin = computed(() => this.usuarioAtual()?.perfil === 'ADMIN');
 
-  login(usuario: string, senha: string): boolean {
-    const match = USUARIOS_FIXOS.find(
-      (u) =>
-        u.usuario.toLowerCase() === usuario.trim().toLowerCase() && u.senha === senha,
-    );
-
-    if (!match) {
-      return false;
-    }
-
-    const session: AuthUser = { usuario: match.usuario, nome: match.nome };
-    this.usuarioAtual.set(session);
-    this.persistUser(session);
-    this.registrarAcesso(session);
-    return true;
+  /** Autentica na API e grava a sessão no navegador. Em caso de erro, emite `null`. */
+  login(usuario: string, senha: string): Observable<AuthUser | null> {
+    return this.http
+      .post<LoginApiResponse>(`${this.base}/auth/login`, {
+        login: usuario.trim(),
+        senha,
+      })
+      .pipe(
+        map((res) => ({
+          id: res.id,
+          usuario: res.login,
+          nome: res.nome,
+          perfil: res.perfil,
+        })),
+        tap((session) => {
+          this.usuarioAtual.set(session);
+          this.persistUser(session);
+        }),
+        catchError(() => of(null)),
+      );
   }
 
   logout(): void {
@@ -112,26 +82,27 @@ export class AuthService {
     }
   }
 
-  limparHistorico(): void {
-    this.historicoAcessos.set([]);
-    try {
-      localStorage.removeItem(HISTORY_KEY);
-    } catch {
-      // ignore
-    }
+  listarAcessos(page = 0, size = 100): Observable<Pagina<AcessoHistorico>> {
+    return this.http
+      .get<Pagina<AcessoApiResponse>>(`${this.base}/acessos`, {
+        params: { page, size, sort: 'ocorridoEm', direction: 'DESC' },
+      })
+      .pipe(
+        map((pagina) => ({
+          ...pagina,
+          content: pagina.content.map((a) => ({
+            id: a.id,
+            usuarioId: a.usuarioId,
+            usuario: a.login,
+            nome: a.nome,
+            ocorridoEm: a.ocorridoEm,
+          })),
+        })),
+      );
   }
 
-  private registrarAcesso(user: AuthUser): void {
-    const entrada: AcessoHistorico = {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-      usuario: user.usuario,
-      nome: user.nome,
-      ocorridoEm: new Date().toISOString(),
-    };
-
-    const atualizado = [entrada, ...this.historicoAcessos()].slice(0, HISTORY_LIMIT);
-    this.historicoAcessos.set(atualizado);
-    this.persistHistory(atualizado);
+  limparHistorico(): Observable<void> {
+    return this.http.delete<void>(`${this.base}/acessos`);
   }
 
   private readStoredUser(): AuthUser | null {
@@ -139,9 +110,9 @@ export class AuthService {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return null;
       const parsed = JSON.parse(raw) as AuthUser;
-      if (!parsed?.usuario || !parsed?.nome) return null;
-      const stillValid = USUARIOS_FIXOS.some((u) => u.usuario === parsed.usuario);
-      return stillValid ? parsed : null;
+      if (!parsed?.id || !parsed?.usuario || !parsed?.nome) return null;
+      if (parsed.perfil !== 'ADMIN' && parsed.perfil !== 'USUARIO') return null;
+      return parsed;
     } catch {
       return null;
     }
@@ -150,28 +121,6 @@ export class AuthService {
   private persistUser(user: AuthUser): void {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-    } catch {
-      // ignore
-    }
-  }
-
-  private readHistory(): AcessoHistorico[] {
-    try {
-      const raw = localStorage.getItem(HISTORY_KEY);
-      if (!raw) return [];
-      const parsed = JSON.parse(raw) as AcessoHistorico[];
-      if (!Array.isArray(parsed)) return [];
-      return parsed.filter(
-        (a) => a?.usuario && a?.nome && typeof a.ocorridoEm === 'string',
-      );
-    } catch {
-      return [];
-    }
-  }
-
-  private persistHistory(items: AcessoHistorico[]): void {
-    try {
-      localStorage.setItem(HISTORY_KEY, JSON.stringify(items));
     } catch {
       // ignore
     }

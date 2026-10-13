@@ -207,6 +207,32 @@
   color: rgba(255, 255, 255, 0.62);
 }
 
+.sidebar__foot-select {
+  width: 100%;
+  margin-bottom: 0.2rem;
+  padding: 0.3rem 0.4rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.sidebar__foot-select option {
+  color: var(--charcoal);
+}
+
+.shell__erro {
+  margin: 0 0 1rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--danger) 35%, white);
+  background: color-mix(in srgb, var(--danger) 10%, white);
+  color: var(--danger);
+  font-weight: 600;
+}
+
 .shell__main {
   display: flex;
   flex-direction: column;

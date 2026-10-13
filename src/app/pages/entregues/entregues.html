@@ -34,7 +34,7 @@
       </tr>
     </thead>
     <tbody>
-      @for (item of filtrados(); track item.id) {
+      @for (item of filtrados(); track $index) {
         <tr>
           <td class="id">{{ item.id }}</td>
           <td>{{ item.sprint }}</td>
@@ -42,7 +42,7 @@
           <td class="desc">{{ item.descricao }}</td>
           <td>{{ item.responsavel }}</td>
           <td>
-            <span class="badge" [attr.data-status]="item.status">{{ item.status }}</span>
+            <span class="badge" [attr.data-tom]="item.tom">{{ item.status }}</span>
           </td>
           <td>{{ item.observacoes || '—' }}</td>
         </tr>

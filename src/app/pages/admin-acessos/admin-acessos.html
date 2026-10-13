@@ -3,7 +3,7 @@
     <div>
       <h2>Histórico de acessos</h2>
       <p>
-        Logins registrados neste navegador ({{ total() }}
+        Logins registrados no sistema ({{ total() }}
         {{ total() === 1 ? 'registro' : 'registros' }}).
       </p>
     </div>
@@ -12,6 +12,10 @@
     }
   </div>
 </section>
+
+@if (erro(); as msg) {
+  <p class="adm-alert adm-alert--erro" role="alert">{{ msg }}</p>
+}
 
 <div class="table-wrap panel">
   <table>
@@ -27,7 +31,7 @@
     <tbody>
       @for (a of acessos(); track a.id; let i = $index) {
         <tr>
-          <td class="id">{{ total() - i }}</td>
+          <td class="id">{{ total() - paginaAtual() * 100 - i }}</td>
           <td class="nome">{{ a.usuario }}</td>
           <td>{{ a.nome }}</td>
           <td>{{ a.ocorridoEm | date: 'dd/MM/yyyy' }}</td>
@@ -35,9 +39,33 @@
         </tr>
       } @empty {
         <tr>
-          <td colspan="5" class="empty">Nenhum acesso registrado ainda.</td>
+          <td colspan="5" class="empty">
+            {{ carregando() ? 'Carregando…' : 'Nenhum acesso registrado ainda.' }}
+          </td>
         </tr>
       }
     </tbody>
   </table>
 </div>
+
+@if (totalPaginas() > 1) {
+  <div class="adm-pager">
+    <button
+      type="button"
+      class="adm-btn adm-btn--sm"
+      [disabled]="paginaAtual() === 0"
+      (click)="carregar(paginaAtual() - 1)"
+    >
+      Anterior
+    </button>
+    <span>Página {{ paginaAtual() + 1 }} de {{ totalPaginas() }}</span>
+    <button
+      type="button"
+      class="adm-btn adm-btn--sm"
+      [disabled]="paginaAtual() + 1 >= totalPaginas()"
+      (click)="carregar(paginaAtual() + 1)"
+    >
+      Próxima
+    </button>
+  </div>
+}

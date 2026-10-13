@@ -1,0 +1,299 @@
+<section class="adm-head">
+  <div>
+    <h2>Sprints</h2>
+    <p>
+      Cadastre, edite, exclua, altere o status ou importe as sprints do projeto. A coluna
+      Atividades conta as atividades cujo campo sprint corresponde à sprint.
+    </p>
+  </div>
+  <div class="adm-actions">
+    <button
+      type="button"
+      class="adm-btn"
+      [disabled]="!projetoAtual()"
+      (click)="importando.set(!importando())"
+    >
+      Importar planilha
+    </button>
+    <button
+      type="button"
+      class="adm-btn adm-btn--primary"
+      [disabled]="!projetoAtual()"
+      (click)="nova()"
+    >
+      Nova sprint
+    </button>
+  </div>
+</section>
+
+<div class="adm-filters">
+  <app-seletor-projeto [projetoId]="projeto()" (projetoAlterado)="aoSelecionarProjeto($event)" />
+</div>
+
+@if (aviso(); as msg) {
+  <div class="adm-alert adm-alert--ok" role="status">{{ msg }}</div>
+}
+@if (erro(); as msg) {
+  <div class="adm-alert adm-alert--erro" role="alert">{{ msg }}</div>
+}
+
+@if (importando() && projetoAtual()) {
+  <app-importar-planilha
+    titulo="Importar sprints"
+    rotulo="sprint(s)"
+    [importar]="importar"
+    (importado)="carregar()"
+    (fechar)="importando.set(false)"
+  >
+    Baixe o template (já vem com as sprints cadastradas no projeto), preencha a aba
+    <strong>Sprints</strong> (a aba <strong>Instruções</strong> explica cada campo) e envie o
+    arquivo. Também é aceita a planilha Sprint Review (abas <strong>Evolução do Projeto</strong> e
+    <strong>Resumo da Sprint</strong>). A sprint é identificada pelo nome (ex.:
+    <strong>Sprint 3</strong>): reimportar atualiza em vez de duplicar.
+    <button
+      acoes
+      type="button"
+      class="adm-btn"
+      [disabled]="baixandoTemplate()"
+      (click)="baixarTemplate()"
+    >
+      {{ baixandoTemplate() ? 'Baixando…' : 'Baixar template' }}
+    </button>
+  </app-importar-planilha>
+}
+
+@if (emEdicao(); as alvo) {
+  <section class="adm-panel">
+    <h3>{{ alvo === 'nova' ? 'Nova sprint' : 'Editar ' + alvo.nome }}</h3>
+    @if (erroForm(); as msg) {
+      <div class="adm-alert adm-alert--erro" role="alert">{{ msg }}</div>
+    }
+    <form class="adm-form" (ngSubmit)="salvar()">
+      <label class="adm-field">
+        Nome*
+        <input
+          name="nome"
+          [(ngModel)]="form.nome"
+          required
+          maxlength="100"
+          placeholder="Ex.: Sprint 11"
+        />
+        @if (errosForm()['nome']; as e) {
+          <span class="adm-field__erro">{{ e }}</span>
+        }
+      </label>
+      <label class="adm-field">
+        Data início
+        <input type="date" name="dataInicio" [(ngModel)]="form.dataInicio" />
+      </label>
+      <label class="adm-field">
+        Data fim
+        <input type="date" name="dataFim" [(ngModel)]="form.dataFim" />
+        @if (errosForm()['periodoValido']; as e) {
+          <span class="adm-field__erro">{{ e }}</span>
+        }
+      </label>
+      <label class="adm-field">
+        Status
+        <select name="status" [(ngModel)]="form.status">
+          @for (s of statusOpcoes; track s.valor) {
+            <option [value]="s.valor">{{ s.rotulo }}</option>
+          }
+        </select>
+      </label>
+      <label class="adm-field">
+        Tarefas planejadas
+        <input
+          type="number"
+          min="0"
+          step="1"
+          name="tarefasPlanejadas"
+          [(ngModel)]="form.tarefasPlanejadas"
+          [placeholder]="contagemPlanejadas()"
+        />
+        @if (errosForm()['tarefasPlanejadas']; as e) {
+          <span class="adm-field__erro">{{ e }}</span>
+        }
+      </label>
+      <label class="adm-field">
+        Tarefas executadas
+        <input
+          type="number"
+          min="0"
+          step="1"
+          name="tarefasExecutadas"
+          [(ngModel)]="form.tarefasExecutadas"
+          [placeholder]="contagemExecutadas()"
+        />
+        @if (errosForm()['tarefasExecutadas']; as e) {
+          <span class="adm-field__erro">{{ e }}</span>
+        }
+      </label>
+      <p class="adm-dica adm-field--wide">
+        Deixe as tarefas em branco para o portal contar as atividades cadastradas na sprint
+        (planejadas = todas, executadas = concluídas).
+      </p>
+      <label class="adm-field adm-field--wide">
+        Objetivo
+        <textarea name="objetivo" [(ngModel)]="form.objetivo" rows="3"></textarea>
+      </label>
+      <div class="adm-form__foot">
+        <button type="button" class="adm-btn" (click)="cancelar()">Cancelar</button>
+        <button type="submit" class="adm-btn adm-btn--primary" [disabled]="salvando()">
+          {{ salvando() ? 'Salvando…' : 'Salvar' }}
+        </button>
+      </div>
+    </form>
+  </section>
+}
+
+<form class="adm-filters" (ngSubmit)="filtrar()">
+  <label class="adm-field">
+    Buscar
+    <input name="q" [(ngModel)]="filtros.q" placeholder="Nome da sprint" />
+  </label>
+  <label class="adm-field">
+    Status
+    <select
+      name="filtroStatus"
+      [ngModel]="filtros.status"
+      (ngModelChange)="filtros.status = $event; filtrar()"
+    >
+      <option value="">Todos</option>
+      @for (s of statusOpcoes; track s.valor) {
+        <option [value]="s.valor">{{ s.rotulo }}</option>
+      }
+    </select>
+  </label>
+  <label class="adm-field">
+    Ordenar por
+    <select
+      name="sort"
+      [ngModel]="listagem().sort"
+      (ngModelChange)="alterarListagem({ sort: $event })"
+    >
+      @for (o of ordenacoes; track o.valor) {
+        <option [value]="o.valor">{{ o.rotulo }}</option>
+      }
+    </select>
+  </label>
+  <label class="adm-field">
+    Direção
+    <select
+      name="direction"
+      [ngModel]="listagem().direction"
+      (ngModelChange)="alterarListagem({ direction: $event })"
+    >
+      <option value="ASC">Crescente</option>
+      <option value="DESC">Decrescente</option>
+    </select>
+  </label>
+  <button type="submit" class="adm-btn" [disabled]="!projetoAtual()">Filtrar</button>
+</form>
+
+<div class="adm-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Sprint</th>
+        <th>Início</th>
+        <th>Fim</th>
+        <th>Tarefas</th>
+        <th>Atividades</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (s of pagina()?.content ?? []; track s.id) {
+        <tr>
+          <td>
+            <span class="adm-table__strong">{{ s.nome }}</span>
+            @if (s.objetivo) {
+              <br /><small class="adm-dica">{{ s.objetivo }}</small>
+            }
+          </td>
+          <td>{{ dataBr(s.dataInicio) }}</td>
+          <td>{{ dataBr(s.dataFim) }}</td>
+          <td>
+            {{ s.executadas }} de {{ s.planejadas }}
+            @if (s.tarefasPlanejadas === null || s.tarefasExecutadas === null) {
+              <br /><small class="adm-dica">pela contagem das atividades</small>
+            }
+          </td>
+          <td>
+            @if (s.totalAtividades) {
+              {{ s.atividadesConcluidas }} de {{ s.totalAtividades }} concluída(s)
+            } @else {
+              -
+            }
+          </td>
+          <td>
+            <select
+              class="adm-badge"
+              [attr.data-tom]="tomStatus(s.status)"
+              [attr.aria-label]="'Status da ' + s.nome"
+              [ngModel]="s.status"
+              (ngModelChange)="alterarStatus(s, $event)"
+            >
+              @for (o of statusOpcoes; track o.valor) {
+                <option [value]="o.valor">{{ o.rotulo }}</option>
+              }
+            </select>
+          </td>
+          <td class="adm-table__acoes">
+            <a
+              class="adm-btn adm-btn--sm"
+              routerLink="/admin/atividades"
+              [queryParams]="{ projeto: s.projetoId, sprint: s.nome }"
+              >Atividades</a
+            >
+            <button type="button" class="adm-btn adm-btn--sm" (click)="editar(s)">Editar</button>
+            <button type="button" class="adm-btn adm-btn--sm adm-btn--danger" (click)="excluir(s)">
+              Excluir
+            </button>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="7" class="adm-table__vazio">
+            @if (!projetoAtual()) {
+              Selecione um projeto.
+            } @else {
+              {{ carregando() ? 'Carregando…' : 'Nenhuma sprint encontrada.' }}
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  @if (pagina(); as p) {
+    @if (p.page.totalElements > 0) {
+      <div class="adm-pager">
+        <span
+          >Página {{ p.page.number + 1 }} de {{ p.page.totalPages }} ·
+          {{ p.page.totalElements }} sprint(s)</span
+        >
+        <div class="adm-actions">
+          <button
+            type="button"
+            class="adm-btn adm-btn--sm"
+            [disabled]="p.page.number === 0"
+            (click)="irParaPagina(p.page.number - 1)"
+          >
+            Anterior
+          </button>
+          <button
+            type="button"
+            class="adm-btn adm-btn--sm"
+            [disabled]="p.page.number + 1 >= p.page.totalPages"
+            (click)="irParaPagina(p.page.number + 1)"
+          >
+            Próxima
+          </button>
+        </div>
+      </div>
+    }
+  }
+</div>

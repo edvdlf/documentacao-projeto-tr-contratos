@@ -1,0 +1,255 @@
+<section class="adm-head">
+  <div>
+    <h2>Riscos</h2>
+    <p>
+      Cadastre, edite, exclua, altere o status ou importe os riscos do projeto. É o conteúdo da
+      página Riscos do portal.
+    </p>
+  </div>
+  <div class="adm-actions">
+    <button
+      type="button"
+      class="adm-btn"
+      [disabled]="!projetoAtual()"
+      (click)="importando.set(!importando())"
+    >
+      Importar planilha
+    </button>
+    <button
+      type="button"
+      class="adm-btn adm-btn--primary"
+      [disabled]="!projetoAtual()"
+      (click)="novo()"
+    >
+      Novo risco
+    </button>
+  </div>
+</section>
+
+<div class="adm-filters">
+  <app-seletor-projeto [projetoId]="projeto()" (projetoAlterado)="aoSelecionarProjeto($event)" />
+</div>
+
+@if (aviso(); as msg) {
+  <div class="adm-alert adm-alert--ok" role="status">{{ msg }}</div>
+}
+@if (erro(); as msg) {
+  <div class="adm-alert adm-alert--erro" role="alert">{{ msg }}</div>
+}
+
+@if (importando() && projetoAtual()) {
+  <app-importar-planilha
+    titulo="Importar riscos"
+    rotulo="risco(s)"
+    [importar]="importar"
+    (importado)="carregar()"
+    (fechar)="importando.set(false)"
+  >
+    Envie a planilha Sprint Review com a aba <strong>Riscos</strong> (colunas ID, Risco,
+    Descrição, Impacto, Probabilidade, Mitigação, Responsável e Status). O risco é identificado
+    pelo <strong>ID</strong> (ex.: RI_01): reimportar atualiza em vez de duplicar.
+  </app-importar-planilha>
+}
+
+@if (emEdicao(); as alvo) {
+  <section class="adm-panel">
+    <h3>{{ alvo === 'novo' ? 'Novo risco' : 'Editar risco ' + alvo.codigo }}</h3>
+    @if (erroForm(); as msg) {
+      <div class="adm-alert adm-alert--erro" role="alert">{{ msg }}</div>
+    }
+    <form class="adm-form" (ngSubmit)="salvar()">
+      <label class="adm-field">
+        ID*
+        <input name="codigo" [(ngModel)]="form.codigo" required maxlength="50" placeholder="Ex.: RI_07" />
+        @if (errosForm()['codigo']; as e) {
+          <span class="adm-field__erro">{{ e }}</span>
+        }
+      </label>
+      <label class="adm-field">
+        Risco*
+        <input name="titulo" [(ngModel)]="form.titulo" required maxlength="200" />
+        @if (errosForm()['titulo']; as e) {
+          <span class="adm-field__erro">{{ e }}</span>
+        }
+      </label>
+      <label class="adm-field">
+        Responsável
+        <input name="responsavel" [(ngModel)]="form.responsavel" maxlength="200" />
+      </label>
+      <label class="adm-field">
+        Impacto
+        <select name="impacto" [(ngModel)]="form.impacto">
+          <option value="">Não informado</option>
+          @for (n of niveis; track n.valor) {
+            <option [value]="n.valor">{{ rotuloNivel(n.valor) }}</option>
+          }
+        </select>
+      </label>
+      <label class="adm-field">
+        Probabilidade
+        <select name="probabilidade" [(ngModel)]="form.probabilidade">
+          <option value="">Não informada</option>
+          @for (n of niveis; track n.valor) {
+            <option [value]="n.valor">{{ rotuloNivel(n.valor, true) }}</option>
+          }
+        </select>
+      </label>
+      <label class="adm-field">
+        Status
+        <select name="status" [(ngModel)]="form.status">
+          @for (s of statusOpcoes; track s.valor) {
+            <option [value]="s.valor">{{ s.rotulo }}</option>
+          }
+        </select>
+      </label>
+      <label class="adm-field adm-field--wide">
+        Descrição
+        <textarea name="descricao" [(ngModel)]="form.descricao" rows="3"></textarea>
+      </label>
+      <label class="adm-field adm-field--wide">
+        Mitigação
+        <textarea name="mitigacao" [(ngModel)]="form.mitigacao" rows="3"></textarea>
+      </label>
+      <div class="adm-form__foot">
+        <button type="button" class="adm-btn" (click)="cancelar()">Cancelar</button>
+        <button type="submit" class="adm-btn adm-btn--primary" [disabled]="salvando()">
+          {{ salvando() ? 'Salvando…' : 'Salvar' }}
+        </button>
+      </div>
+    </form>
+  </section>
+}
+
+<form class="adm-filters" (ngSubmit)="filtrar()">
+  <label class="adm-field">
+    Buscar
+    <input name="q" [(ngModel)]="filtros.q" placeholder="ID, risco ou responsável" />
+  </label>
+  <label class="adm-field">
+    Status
+    <select
+      name="filtroStatus"
+      [ngModel]="filtros.status"
+      (ngModelChange)="filtros.status = $event; filtrar()"
+    >
+      <option value="">Todos</option>
+      @for (s of statusOpcoes; track s.valor) {
+        <option [value]="s.valor">{{ s.rotulo }}</option>
+      }
+    </select>
+  </label>
+  <label class="adm-field">
+    Ordenar por
+    <select
+      name="sort"
+      [ngModel]="listagem().sort"
+      (ngModelChange)="alterarListagem({ sort: $event })"
+    >
+      @for (o of ordenacoes; track o.valor) {
+        <option [value]="o.valor">{{ o.rotulo }}</option>
+      }
+    </select>
+  </label>
+  <label class="adm-field">
+    Direção
+    <select
+      name="direction"
+      [ngModel]="listagem().direction"
+      (ngModelChange)="alterarListagem({ direction: $event })"
+    >
+      <option value="ASC">Crescente</option>
+      <option value="DESC">Decrescente</option>
+    </select>
+  </label>
+  <button type="submit" class="adm-btn" [disabled]="!projetoAtual()">Filtrar</button>
+</form>
+
+<div class="adm-table">
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Risco</th>
+        <th>Impacto</th>
+        <th>Probabilidade</th>
+        <th>Responsável</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (r of pagina()?.content ?? []; track r.id) {
+        <tr>
+          <td class="adm-table__strong">{{ r.codigo }}</td>
+          <td>
+            {{ r.titulo }}
+            @if (r.descricao) {
+              <br /><small class="adm-dica">{{ r.descricao }}</small>
+            }
+          </td>
+          <td>{{ rotuloNivel(r.impacto) || '-' }}</td>
+          <td>{{ rotuloNivel(r.probabilidade, true) || '-' }}</td>
+          <td>{{ r.responsavel || '-' }}</td>
+          <td>
+            <select
+              class="adm-badge"
+              [attr.data-tom]="tomStatus(r.status)"
+              [attr.aria-label]="'Status do risco ' + r.codigo"
+              [ngModel]="r.status"
+              (ngModelChange)="alterarStatus(r, $event)"
+            >
+              @for (o of statusOpcoes; track o.valor) {
+                <option [value]="o.valor">{{ o.rotulo }}</option>
+              }
+            </select>
+          </td>
+          <td class="adm-table__acoes">
+            <button type="button" class="adm-btn adm-btn--sm" (click)="editar(r)">Editar</button>
+            <button type="button" class="adm-btn adm-btn--sm adm-btn--danger" (click)="excluir(r)">
+              Excluir
+            </button>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="7" class="adm-table__vazio">
+            @if (!projetoAtual()) {
+              Selecione um projeto.
+            } @else {
+              {{ carregando() ? 'Carregando…' : 'Nenhum risco encontrado.' }}
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  @if (pagina(); as p) {
+    @if (p.page.totalElements > 0) {
+      <div class="adm-pager">
+        <span
+          >Página {{ p.page.number + 1 }} de {{ p.page.totalPages }} ·
+          {{ p.page.totalElements }} risco(s)</span
+        >
+        <div class="adm-actions">
+          <button
+            type="button"
+            class="adm-btn adm-btn--sm"
+            [disabled]="p.page.number === 0"
+            (click)="irParaPagina(p.page.number - 1)"
+          >
+            Anterior
+          </button>
+          <button
+            type="button"
+            class="adm-btn adm-btn--sm"
+            [disabled]="p.page.number + 1 >= p.page.totalPages"
+            (click)="irParaPagina(p.page.number + 1)"
+          >
+            Próxima
+          </button>
+        </div>
+      </div>
+    }
+  }
+</div>

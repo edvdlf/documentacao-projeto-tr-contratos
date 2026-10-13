@@ -1,8 +1,9 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { PORTAL, PROJETO } from '../../data/projeto.identidade';
+import { PORTAL } from '../../data/projeto.identidade';
 import { AuthService } from '../../services/auth.service';
+import { ProjetoService } from '../../services/projeto.service';
 
 @Component({
   selector: 'app-login',
@@ -15,7 +16,7 @@ export class LoginComponent {
   private readonly router = inject(Router);
 
   readonly portal = PORTAL;
-  readonly projetoInfo = PROJETO;
+  readonly projeto = inject(ProjetoService);
 
   usuario = '';
   senha = '';
@@ -31,14 +32,19 @@ export class LoginComponent {
     this.erro.set(false);
     this.submetendo.set(true);
 
-    const ok = this.auth.login(this.usuario, this.senha);
-    this.submetendo.set(false);
-
-    if (!ok) {
-      this.erro.set(true);
-      return;
-    }
-
-    void this.router.navigateByUrl('/');
+    this.auth.login(this.usuario, this.senha).subscribe({
+      next: (user) => {
+        this.submetendo.set(false);
+        if (!user) {
+          this.erro.set(true);
+          return;
+        }
+        void this.router.navigateByUrl('/');
+      },
+      error: () => {
+        this.submetendo.set(false);
+        this.erro.set(true);
+      },
+    });
   }
 }

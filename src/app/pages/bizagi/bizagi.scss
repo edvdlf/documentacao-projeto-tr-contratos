@@ -30,8 +30,22 @@
   font-size: 0.88rem;
 }
 
-.btn:hover {
+.btn:hover:not(:disabled) {
   background: var(--orange-deep);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.toolbar {
+  align-items: center;
+}
+
+.pacote-info {
+  color: var(--dove);
+  font-size: 0.85rem;
 }
 
 .panel {
@@ -94,33 +108,6 @@ th {
 .data {
   white-space: nowrap;
   color: var(--dove);
-}
-
-.badge {
-  display: inline-flex;
-  padding: 0.15rem 0.5rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  background: var(--mercury);
-  color: var(--charcoal);
-  white-space: nowrap;
-}
-
-.badge[data-status='Ativo'],
-.badge[data-status='ativo'],
-.badge[data-status='Aprovado'],
-.badge[data-status='aprovado'] {
-  background: color-mix(in srgb, var(--success) 16%, white);
-  color: var(--success);
-}
-
-.badge[data-status='Inativo'],
-.badge[data-status='inativo'],
-.badge[data-status='Em revisão'],
-.badge[data-status='A revisar'] {
-  background: color-mix(in srgb, var(--warning) 18%, white);
-  color: #8a5a00;
 }
 
 .empty {

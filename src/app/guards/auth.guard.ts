@@ -24,7 +24,7 @@ export const guestGuard: CanActivateFn = () => {
   return router.createUrlTree(['/']);
 };
 
-/** Área admin — apenas o usuário `admin`. */
+/** Área admin — usuários com perfil ADMIN na API. */
 export const adminGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);

@@ -9,11 +9,15 @@
       </div>
     </div>
 
-    <p class="login__project">
-      Acesso ao acompanhamento de
-      <strong>{{ projetoInfo.nome }}</strong>
-      · {{ projetoInfo.cliente }}
-    </p>
+    @if (projeto.projetoAtual(); as info) {
+      <p class="login__project">
+        Acesso ao acompanhamento de
+        <strong>{{ info.nome }}</strong>
+        @if (info.cliente) {
+          · {{ info.cliente }}
+        }
+      </p>
+    }
 
     <form class="login__form" (ngSubmit)="onSubmit()" autocomplete="on">
       <label class="login__field">

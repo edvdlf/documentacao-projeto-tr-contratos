@@ -1,3 +1,5 @@
+@let info = projeto.projetoAtual();
+
 <div class="shell" [class.shell--collapsed]="collapsed()">
   <aside class="sidebar" [attr.aria-expanded]="!collapsed()">
     <div class="sidebar__top">
@@ -32,6 +34,10 @@
         <span class="sidebar__icon" aria-hidden="true">R</span>
         <span class="sidebar__label">Resumo</span>
       </a>
+      <a routerLink="/resumo-sprints" routerLinkActive="is-active" title="Resumo das Sprints">
+        <span class="sidebar__icon" aria-hidden="true">S</span>
+        <span class="sidebar__label">Resumo das Sprints</span>
+      </a>
       <a routerLink="/entregues" routerLinkActive="is-active" title="Desenvolvidas">
         <span class="sidebar__icon" aria-hidden="true">D</span>
         <span class="sidebar__label">Desenvolvidas</span>
@@ -53,17 +59,44 @@
         <span class="sidebar__label">Fluxos Bizagi</span>
       </a>
       @if (auth.isAdmin()) {
-        <a routerLink="/admin/acessos" routerLinkActive="is-active" title="Histórico de acessos">
-          <span class="sidebar__icon" aria-hidden="true">A</span>
-          <span class="sidebar__label">Acessos</span>
-        </a>
+        <div class="sidebar__group">
+          <a routerLink="/admin" routerLinkActive="is-active" class="sidebar__group-title" title="Administração">
+            <span class="sidebar__icon" aria-hidden="true">A</span>
+            <span class="sidebar__label">Administração</span>
+          </a>
+          <div class="sidebar__subnav">
+            <a routerLink="/admin/projetos" routerLinkActive="is-active">Projetos</a>
+            <a routerLink="/admin/atividades" routerLinkActive="is-active">Atividades</a>
+            <a routerLink="/admin/sprints" routerLinkActive="is-active">Sprints</a>
+            <a routerLink="/admin/proxima-sprint" routerLinkActive="is-active">Próxima sprint</a>
+            <a routerLink="/admin/fluxos" routerLinkActive="is-active">Fluxos</a>
+            <a routerLink="/admin/pendencias" routerLinkActive="is-active">Pendências</a>
+            <a routerLink="/admin/riscos" routerLinkActive="is-active">Riscos</a>
+            <a routerLink="/admin/acessos" routerLinkActive="is-active">Histórico de acessos</a>
+          </div>
+        </div>
       }
     </nav>
 
     <div class="sidebar__foot">
       <p class="sidebar__foot-label">Projeto em acompanhamento</p>
-      <p class="sidebar__foot-project">{{ projetoInfo.nomeCurto }}</p>
-      <p class="sidebar__foot-client">Cliente · {{ projetoInfo.cliente }}</p>
+      @if (projeto.projetos().length > 1) {
+        <select
+          class="sidebar__foot-select"
+          aria-label="Projeto em acompanhamento"
+          [value]="info?.id ?? ''"
+          (change)="selecionarProjeto($event)"
+        >
+          @for (p of projeto.projetos(); track p.id) {
+            <option [value]="p.id">{{ p.nomeCurto || p.nome }}</option>
+          }
+        </select>
+      } @else {
+        <p class="sidebar__foot-project">{{ info?.nomeCurto || info?.nome || '—' }}</p>
+      }
+      @if (info?.cliente) {
+        <p class="sidebar__foot-client">Cliente · {{ info?.cliente }}</p>
+      }
     </div>
   </aside>
 
@@ -71,11 +104,13 @@
     <header class="topbar">
       <div>
         <p class="topbar__kicker">{{ portal.produtoCompleto }} · {{ portal.tagline }}</p>
-        <h1 class="topbar__heading">{{ projetoInfo.nome }}</h1>
+        <h1 class="topbar__heading">{{ info?.nome ?? portal.produto }}</h1>
       </div>
       <div class="topbar__meta">
         <span class="topbar__badge topbar__badge--vendor">{{ portal.fornecedor }}</span>
-        <span class="topbar__badge">Cliente · {{ projetoInfo.cliente }}</span>
+        @if (info?.cliente) {
+          <span class="topbar__badge">Cliente · {{ info?.cliente }}</span>
+        }
         @if (auth.user(); as user) {
           <span class="topbar__badge topbar__badge--user" [title]="user.usuario">{{
             user.nome
@@ -86,18 +121,23 @@
     </header>
 
     <main class="content">
+      @if (projeto.erro(); as erro) {
+        <p class="shell__erro" role="alert">{{ erro }}</p>
+      }
       <router-outlet />
     </main>
 
     <footer class="footer">
       <span
-        >© {{ ano }} {{ portal.fornecedor }} · Projeto {{ projetoInfo.nomeCurto }} para
-        {{ projetoInfo.cliente }}</span
+        >© {{ ano }} {{ portal.fornecedor }}@if (info) {
+          · Projeto {{ info.nomeCurto || info.nome }}@if (info.cliente) {
+            para {{ info.cliente }}
+          }
+        }</span
       >
-      <span
-        >Atualize <code>conteudo/Sprint_Review_Controle_Entregas.xlsx</code> e reinicie o
-        <code>npm start</code></span
-      >
+      @if (auth.isAdmin()) {
+        <span>Os dados são mantidos em <a routerLink="/admin">Administração</a></span>
+      }
     </footer>
   </div>
 </div>

@@ -1,0 +1,238 @@
+<section class="adm-head">
+  <div>
+    <h2>Projetos</h2>
+    <p>Cadastre, edite, exclua, altere o status ou importe projetos a partir do template Excel.</p>
+  </div>
+  <div class="adm-actions">
+    <button type="button" class="adm-btn" (click)="importando.set(!importando())">
+      Importar planilha
+    </button>
+    <button type="button" class="adm-btn adm-btn--primary" (click)="novo()">Novo projeto</button>
+  </div>
+</section>
+
+@if (aviso(); as msg) {
+  <div class="adm-alert adm-alert--ok" role="status">{{ msg }}</div>
+}
+@if (erro(); as msg) {
+  <div class="adm-alert adm-alert--erro" role="alert">{{ msg }}</div>
+}
+
+@if (importando()) {
+  <app-importar-planilha
+    titulo="Importar projetos"
+    rotulo="projeto(s)"
+    [importar]="importar"
+    (importado)="carregar()"
+    (fechar)="importando.set(false)"
+  >
+    Baixe o template, preencha a aba <strong>Projetos</strong> (a aba <strong>Instruções</strong>
+    explica cada campo) e envie o arquivo. O <strong>Código</strong> identifica o projeto: se já
+    existir, é atualizado.
+    <button
+      acoes
+      type="button"
+      class="adm-btn"
+      [disabled]="baixandoTemplate()"
+      (click)="baixarTemplate()"
+    >
+      {{ baixandoTemplate() ? 'Baixando…' : 'Baixar template' }}
+    </button>
+  </app-importar-planilha>
+}
+
+@if (emEdicao(); as alvo) {
+  <section class="adm-panel">
+    <h3>{{ alvo === 'novo' ? 'Novo projeto' : 'Editar projeto ' + alvo.codigo }}</h3>
+    @if (erroForm(); as msg) {
+      <div class="adm-alert adm-alert--erro" role="alert">{{ msg }}</div>
+    }
+    <form class="adm-form" (ngSubmit)="salvar()">
+      <label class="adm-field">
+        Código*
+        <input name="codigo" [(ngModel)]="form.codigo" required maxlength="50" />
+        @if (errosForm()['codigo']; as e) {
+          <span class="adm-field__erro">{{ e }}</span>
+        }
+      </label>
+      <label class="adm-field">
+        Nome*
+        <input name="nome" [(ngModel)]="form.nome" required maxlength="200" />
+        @if (errosForm()['nome']; as e) {
+          <span class="adm-field__erro">{{ e }}</span>
+        }
+      </label>
+      <label class="adm-field">
+        Nome curto
+        <input name="nomeCurto" [(ngModel)]="form.nomeCurto" maxlength="100" />
+      </label>
+      <label class="adm-field">
+        Cliente
+        <input name="cliente" [(ngModel)]="form.cliente" maxlength="200" />
+      </label>
+      <label class="adm-field">
+        Status
+        <select name="status" [(ngModel)]="form.status">
+          @for (s of statusOpcoes; track s.valor) {
+            <option [value]="s.valor">{{ s.rotulo }}</option>
+          }
+        </select>
+      </label>
+      <label class="adm-field">
+        Data início
+        <input type="date" name="dataInicio" [(ngModel)]="form.dataInicio" />
+      </label>
+      <label class="adm-field">
+        Data fim
+        <input type="date" name="dataFim" [(ngModel)]="form.dataFim" />
+        @if (errosForm()['periodoValido']; as e) {
+          <span class="adm-field__erro">{{ e }}</span>
+        }
+      </label>
+      <label class="adm-field adm-field--wide">
+        Descrição
+        <textarea name="descricao" [(ngModel)]="form.descricao" rows="3"></textarea>
+      </label>
+      <div class="adm-form__foot">
+        <button type="button" class="adm-btn" (click)="cancelar()">Cancelar</button>
+        <button type="submit" class="adm-btn adm-btn--primary" [disabled]="salvando()">
+          {{ salvando() ? 'Salvando…' : 'Salvar' }}
+        </button>
+      </div>
+    </form>
+  </section>
+}
+
+<form class="adm-filters" (ngSubmit)="buscar()">
+  <label class="adm-field">
+    Buscar
+    <input name="q" [(ngModel)]="q" placeholder="Código, nome ou cliente" />
+  </label>
+  <label class="adm-field">
+    Ordenar por
+    <select
+      name="sort"
+      [ngModel]="listagem().sort"
+      (ngModelChange)="alterarListagem({ sort: $event })"
+    >
+      @for (o of ordenacoes; track o.valor) {
+        <option [value]="o.valor">{{ o.rotulo }}</option>
+      }
+    </select>
+  </label>
+  <label class="adm-field">
+    Direção
+    <select
+      name="direction"
+      [ngModel]="listagem().direction"
+      (ngModelChange)="alterarListagem({ direction: $event })"
+    >
+      <option value="ASC">Crescente</option>
+      <option value="DESC">Decrescente</option>
+    </select>
+  </label>
+  <label class="adm-field">
+    Por página
+    <select
+      name="size"
+      [ngModel]="listagem().size"
+      (ngModelChange)="alterarListagem({ size: +$event })"
+    >
+      <option [value]="10">10</option>
+      <option [value]="20">20</option>
+      <option [value]="50">50</option>
+      <option [value]="100">100</option>
+    </select>
+  </label>
+  <button type="submit" class="adm-btn">Buscar</button>
+</form>
+
+<div class="adm-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Código</th>
+        <th>Nome</th>
+        <th>Cliente</th>
+        <th>Status</th>
+        <th>Início</th>
+        <th>Fim</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (p of pagina()?.content ?? []; track p.id) {
+        <tr>
+          <td class="adm-table__strong">{{ p.codigo }}</td>
+          <td>{{ p.nome }}</td>
+          <td>{{ p.cliente || '-' }}</td>
+          <td>
+            <select
+              class="adm-badge"
+              [attr.data-tom]="tomStatus(p.status)"
+              [attr.aria-label]="'Status do projeto ' + p.codigo"
+              [ngModel]="p.status"
+              (ngModelChange)="alterarStatus(p, $event)"
+            >
+              @for (s of statusOpcoes; track s.valor) {
+                <option [value]="s.valor">{{ s.rotulo }}</option>
+              }
+            </select>
+          </td>
+          <td>{{ dataBr(p.dataInicio) }}</td>
+          <td>{{ dataBr(p.dataFim) }}</td>
+          <td class="adm-table__acoes">
+            <a class="adm-btn adm-btn--sm" routerLink="/admin/atividades" [queryParams]="{ projeto: p.id }"
+              >Atividades</a
+            >
+            <a class="adm-btn adm-btn--sm" routerLink="/admin/sprints" [queryParams]="{ projeto: p.id }"
+              >Sprints</a
+            >
+            <a class="adm-btn adm-btn--sm" routerLink="/admin/fluxos" [queryParams]="{ projeto: p.id }"
+              >Fluxos</a
+            >
+            <button type="button" class="adm-btn adm-btn--sm" (click)="editar(p)">Editar</button>
+            <button type="button" class="adm-btn adm-btn--sm adm-btn--danger" (click)="excluir(p)">
+              Excluir
+            </button>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="7" class="adm-table__vazio">
+            {{ carregando() ? 'Carregando…' : 'Nenhum projeto encontrado.' }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  @if (pagina(); as p) {
+    @if (p.page.totalElements > 0) {
+      <div class="adm-pager">
+        <span
+          >Página {{ p.page.number + 1 }} de {{ p.page.totalPages }} ·
+          {{ p.page.totalElements }} projeto(s)</span
+        >
+        <div class="adm-actions">
+          <button
+            type="button"
+            class="adm-btn adm-btn--sm"
+            [disabled]="p.page.number === 0"
+            (click)="irParaPagina(p.page.number - 1)"
+          >
+            Anterior
+          </button>
+          <button
+            type="button"
+            class="adm-btn adm-btn--sm"
+            [disabled]="p.page.number + 1 >= p.page.totalPages"
+            (click)="irParaPagina(p.page.number + 1)"
+          >
+            Próxima
+          </button>
+        </div>
+      </div>
+    }
+  }
+</div>

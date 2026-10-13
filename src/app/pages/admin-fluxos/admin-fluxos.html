@@ -1,0 +1,310 @@
+<section class="adm-head">
+  <div>
+    <h2>Fluxos</h2>
+    <p>
+      Cadastre, edite, exclua, altere o status ou importe os fluxos Bizagi do projeto, e publique o
+      pacote web exportado pelo Bizagi.
+    </p>
+  </div>
+  <div class="adm-actions">
+    <button
+      type="button"
+      class="adm-btn"
+      [disabled]="!projetoAtual()"
+      (click)="importando.set(!importando())"
+    >
+      Importar planilha
+    </button>
+    <button
+      type="button"
+      class="adm-btn adm-btn--primary"
+      [disabled]="!projetoAtual()"
+      (click)="novo()"
+    >
+      Novo fluxo
+    </button>
+  </div>
+</section>
+
+<div class="adm-filters">
+  <app-seletor-projeto [projetoId]="projeto()" (projetoAlterado)="aoSelecionarProjeto($event)" />
+</div>
+
+@if (aviso(); as msg) {
+  <div class="adm-alert adm-alert--ok" role="status">{{ msg }}</div>
+}
+@if (erro(); as msg) {
+  <div class="adm-alert adm-alert--erro" role="alert">{{ msg }}</div>
+}
+
+@if (importando() && projetoAtual()) {
+  <app-importar-planilha
+    titulo="Importar fluxos"
+    rotulo="fluxo(s)"
+    [importar]="importar"
+    (importado)="carregar()"
+    (fechar)="importando.set(false)"
+  >
+    Use a planilha Sprint Review (aba <strong>Fluxos Bizagi</strong>, colunas Seq, ID, Nome,
+    Descrição, Imagem, Status, AtualizadoEm e Passo a Passo). O fluxo é identificado pela coluna
+    <strong>ID</strong>: reimportar atualiza em vez de duplicar.
+  </app-importar-planilha>
+}
+
+@if (emEdicao(); as alvo) {
+  <section class="adm-panel">
+    <h3>{{ alvo === 'novo' ? 'Novo fluxo' : 'Editar fluxo ' + alvo.nome }}</h3>
+    @if (erroForm(); as msg) {
+      <div class="adm-alert adm-alert--erro" role="alert">{{ msg }}</div>
+    }
+    <form class="adm-form" (ngSubmit)="salvar()">
+      <label class="adm-field">
+        Sequência
+        <input
+          type="number"
+          name="seq"
+          min="0"
+          [(ngModel)]="form.seq"
+          placeholder="Vazio = fim da lista"
+        />
+        @if (errosForm()['seq']; as e) {
+          <span class="adm-field__erro">{{ e }}</span>
+        }
+      </label>
+      <label class="adm-field">
+        ID*
+        <input name="codigo" [(ngModel)]="form.codigo" required maxlength="150" />
+        @if (errosForm()['codigo']; as e) {
+          <span class="adm-field__erro">{{ e }}</span>
+        }
+      </label>
+      <label class="adm-field">
+        Nome*
+        <input name="nome" [(ngModel)]="form.nome" required maxlength="200" />
+        @if (errosForm()['nome']; as e) {
+          <span class="adm-field__erro">{{ e }}</span>
+        }
+      </label>
+      <label class="adm-field">
+        Status
+        <select name="status" [(ngModel)]="form.status">
+          @for (s of statusOpcoes; track s.valor) {
+            <option [value]="s.valor">{{ s.rotulo }}</option>
+          }
+        </select>
+      </label>
+      <label class="adm-field">
+        Atualizado em
+        <input type="date" name="dataAtualizacao" [(ngModel)]="form.dataAtualizacao" />
+      </label>
+      <label class="adm-field">
+        Imagem
+        <input
+          name="imagem"
+          [(ngModel)]="form.imagem"
+          maxlength="300"
+          placeholder="Ex.: new-name.png"
+        />
+      </label>
+      <label class="adm-field adm-field--wide">
+        Descrição
+        <textarea name="descricao" [(ngModel)]="form.descricao" rows="2"></textarea>
+      </label>
+      <label class="adm-field adm-field--wide">
+        Passo a passo (um por linha)
+        <textarea name="passos" [(ngModel)]="form.passos" rows="4"></textarea>
+      </label>
+      <div class="adm-form__foot">
+        <button type="button" class="adm-btn" (click)="cancelar()">Cancelar</button>
+        <button type="submit" class="adm-btn adm-btn--primary" [disabled]="salvando()">
+          {{ salvando() ? 'Salvando…' : 'Salvar' }}
+        </button>
+      </div>
+    </form>
+  </section>
+}
+
+<form class="adm-filters" (ngSubmit)="filtrar()">
+  <label class="adm-field">
+    Buscar
+    <input name="q" [(ngModel)]="filtros.q" placeholder="ID ou nome" />
+  </label>
+  <label class="adm-field">
+    Status
+    <select
+      name="filtroStatus"
+      [ngModel]="filtros.status"
+      (ngModelChange)="filtros.status = $event; filtrar()"
+    >
+      <option value="">Todos</option>
+      @for (s of statusOpcoes; track s.valor) {
+        <option [value]="s.valor">{{ s.rotulo }}</option>
+      }
+    </select>
+  </label>
+  <label class="adm-field">
+    Ordenar por
+    <select
+      name="sort"
+      [ngModel]="listagem().sort"
+      (ngModelChange)="alterarListagem({ sort: $event })"
+    >
+      @for (o of ordenacoes; track o.valor) {
+        <option [value]="o.valor">{{ o.rotulo }}</option>
+      }
+    </select>
+  </label>
+  <label class="adm-field">
+    Direção
+    <select
+      name="direction"
+      [ngModel]="listagem().direction"
+      (ngModelChange)="alterarListagem({ direction: $event })"
+    >
+      <option value="ASC">Crescente</option>
+      <option value="DESC">Decrescente</option>
+    </select>
+  </label>
+  <button type="submit" class="adm-btn" [disabled]="!projetoAtual()">Filtrar</button>
+</form>
+
+<div class="adm-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Seq</th>
+        <th>ID</th>
+        <th>Nome</th>
+        <th>Status</th>
+        <th>Atualizado em</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (f of pagina()?.content ?? []; track f.id) {
+        <tr>
+          <td class="adm-table__strong">{{ f.seq }}</td>
+          <td>{{ f.codigo }}</td>
+          <td>
+            {{ f.nome }}
+            @if (f.descricao && f.descricao !== f.nome) {
+              <br /><small class="adm-dica">{{ f.descricao }}</small>
+            }
+          </td>
+          <td>
+            <select
+              class="adm-badge"
+              [attr.data-tom]="tomStatus(f.status)"
+              [attr.aria-label]="'Status do fluxo ' + f.nome"
+              [ngModel]="f.status"
+              (ngModelChange)="alterarStatus(f, $event)"
+            >
+              @for (s of statusOpcoes; track s.valor) {
+                <option [value]="s.valor">{{ s.rotulo }}</option>
+              }
+            </select>
+          </td>
+          <td>{{ dataBr(f.dataAtualizacao) }}</td>
+          <td class="adm-table__acoes">
+            <button type="button" class="adm-btn adm-btn--sm" (click)="editar(f)">Editar</button>
+            <button type="button" class="adm-btn adm-btn--sm adm-btn--danger" (click)="excluir(f)">
+              Excluir
+            </button>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="6" class="adm-table__vazio">
+            @if (!projetoAtual()) {
+              Selecione um projeto.
+            } @else {
+              {{ carregando() ? 'Carregando…' : 'Nenhum fluxo encontrado.' }}
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  @if (pagina(); as p) {
+    @if (p.page.totalElements > 0) {
+      <div class="adm-pager">
+        <span
+          >Página {{ p.page.number + 1 }} de {{ p.page.totalPages }} ·
+          {{ p.page.totalElements }} fluxo(s)</span
+        >
+        <div class="adm-actions">
+          <button
+            type="button"
+            class="adm-btn adm-btn--sm"
+            [disabled]="p.page.number === 0"
+            (click)="irParaPagina(p.page.number - 1)"
+          >
+            Anterior
+          </button>
+          <button
+            type="button"
+            class="adm-btn adm-btn--sm"
+            [disabled]="p.page.number + 1 >= p.page.totalPages"
+            (click)="irParaPagina(p.page.number + 1)"
+          >
+            Próxima
+          </button>
+        </div>
+      </div>
+    }
+  }
+</div>
+
+<section class="adm-panel">
+  <h3>Pacote web do Bizagi (visualizador)</h3>
+  <p class="adm-dica">
+    No Bizagi Modeler, use <strong>Publicar &gt; Web</strong>, compacte a pasta gerada (a que contém o
+    <strong>index.html</strong>) em <strong>.zip</strong> e envie abaixo. O novo pacote substitui o
+    anterior e passa a ser aberto pelo botão "Abrir visualizador de fluxos".
+  </p>
+  @if (pacote(); as p) {
+    @if (p.disponivel) {
+      <p class="adm-dica">
+        Pacote atual: <strong>{{ p.nomeArquivo || 'sem nome' }}</strong> — {{ p.arquivos }}
+        arquivo(s), {{ tamanhoLegivel(p.tamanhoBytes) }}, publicado em
+        {{ p.publicadoEm | date: 'dd/MM/yyyy HH:mm' }}.
+        @if (urlVisualizador(p); as url) {
+          <a [href]="url" target="_blank" rel="noopener noreferrer">Abrir visualizador</a>
+        }
+      </p>
+    } @else {
+      <p class="adm-dica">Nenhum pacote publicado ainda.</p>
+    }
+  }
+  @if (erroPacote(); as msg) {
+    <div class="adm-alert adm-alert--erro" role="alert">{{ msg }}</div>
+  }
+  @if (mensagemPacote(); as msg) {
+    <div class="adm-alert adm-alert--ok" role="status">{{ msg }}</div>
+  }
+  <div class="adm-filters">
+    <label class="adm-field">
+      Pacote exportado (.zip)
+      <input type="file" accept=".zip,application/zip" (change)="selecionarPacote($event)" />
+    </label>
+    <button
+      type="button"
+      class="adm-btn adm-btn--primary"
+      [disabled]="!arquivoPacote() || enviandoPacote()"
+      (click)="publicarPacote()"
+    >
+      {{ enviandoPacote() ? 'Enviando…' : 'Publicar pacote' }}
+    </button>
+    @if (pacote()?.disponivel) {
+      <button
+        type="button"
+        class="adm-btn"
+        [disabled]="enviandoPacote()"
+        (click)="removerPacote()"
+      >
+        Remover pacote
+      </button>
+    }
+  </div>
+</section>

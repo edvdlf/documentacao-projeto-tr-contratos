@@ -1,107 +1,318 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { CONTEUDO_FALLBACK } from '../data/projeto.data';
+import { environment } from '../../environments/environment';
 import {
+  Atividade,
+  Pagina,
+  Painel,
+  Projeto,
+  Sprint,
+  dataBr,
+  rotuloNivel,
+  rotuloStatus,
+} from '../models/admin.models';
+import {
+  DesempenhoSprint,
   EvolucaoSprint,
   FluxoBizagi,
-  ItemEntrega,
-  Pendencia,
-  ProjetoConteudo,
-  ResumoSprint,
-  Risco,
+  ItemAtividade,
+  PendenciaPainel,
+  ProximaSprint,
+  ResumoSprints,
+  RiscoPainel,
+  TomBadge,
 } from '../models/projeto.models';
-import { parseProjetoWorkbook } from './excel-parser';
+import { mensagemErro } from './admin-api.service';
 
-/** Planilha servida a partir de conteudo/ (via angular.json assets). */
-const EXCEL_URL = 'data/Sprint_Review_Controle_Entregas.xlsx';
+const STORAGE_KEY = 'vetorit.projeto';
+/** Ao abrir uma página logo depois de outra carga, reaproveita os dados. */
+const INTERVALO_MINIMO_MS = 3000;
 
+/** Dados exibidos no portal, vindos de `GET /api/projetos/{id}/painel`. */
 @Injectable({ providedIn: 'root' })
 export class ProjetoService {
   private readonly http = inject(HttpClient);
+  private readonly base = `${environment.apiUrl}/api/projetos`;
 
   readonly carregado = signal(false);
-  readonly fonte = signal<string | undefined>(undefined);
-  readonly geradoEm = signal<string | undefined>(undefined);
-  readonly resumo = signal<ResumoSprint>(CONTEUDO_FALLBACK.resumo);
-  readonly entregues = signal<ItemEntrega[]>([]);
-  readonly proximaSprint = signal<ItemEntrega[]>([]);
-  readonly pendencias = signal<Pendencia[]>([]);
-  readonly evolucao = signal<EvolucaoSprint[]>([]);
-  readonly riscos = signal<Risco[]>([]);
-  readonly fluxos = signal<FluxoBizagi[]>([]);
+  readonly erro = signal<string | null>(null);
+  readonly projetos = signal<Projeto[]>([]);
+  private readonly painel = signal<Painel | null>(null);
+  private painelCarregadoEm = 0;
 
-  readonly sprintsEntregues = computed(() => {
-    const set = new Set(this.entregues().map((i) => i.sprint).filter(Boolean));
-    return [...set];
+  readonly projetoAtual = computed(() => this.painel()?.projeto ?? null);
+
+  private readonly sprints = computed(() =>
+    (this.painel()?.sprints ?? []).filter((s) => s.status !== 'CANCELADA'),
+  );
+
+  /** Atividades na ordem das sprints (pela data) e, dentro da sprint, pelo código. */
+  private readonly atividades = computed(() => {
+    const sprints = this.sprints();
+    const posicao = (a: Atividade) => {
+      const i = sprints.findIndex((s) => pertence(a.sprint, s));
+      return i < 0 ? sprints.length : i;
+    };
+    return [...(this.painel()?.atividades ?? [])].sort(
+      (a, b) =>
+        posicao(a) - posicao(b) ||
+        (a.sprint ?? '').localeCompare(b.sprint ?? '', 'pt-BR', { numeric: true }) ||
+        a.codigo.localeCompare(b.codigo, 'pt-BR', { numeric: true }),
+    );
   });
 
-  readonly progressoGeral = computed(() => {
-    const t = this.resumoTarefas();
-    if (!t.planejadoTotal) return 0;
-    return Math.round((t.desenvolvidas / t.planejadoTotal) * 100);
+  readonly entregues = computed(() =>
+    this.atividades()
+      .filter((a) => a.status === 'CONCLUIDA')
+      .map(itemAtividade),
+  );
+
+  readonly sprintsEntregues = computed(() => [
+    ...new Set(this.entregues().map((i) => i.sprint).filter(Boolean)),
+  ]);
+
+  /** Primeira sprint (pela data) ainda não concluída, com as atividades dela. */
+  readonly proximaSprint = computed<ProximaSprint | null>(() => {
+    const sprint = this.sprints().find((s) => s.status !== 'CONCLUIDA');
+    if (!sprint) return null;
+    return {
+      rotulo: sprint.rotulo,
+      objetivo: sprint.objetivo ?? '',
+      itens: this.atividades()
+        .filter((a) => pertence(a.sprint, sprint))
+        .map(itemAtividade),
+    };
   });
 
-  /** Totais da aba Evolução do Projeto: desenvolvidas × a desenvolver */
+  readonly evolucao = computed<EvolucaoSprint[]>(() => {
+    let acumuladas = 0;
+    return this.sprints().map((s) => {
+      const entregues = semEntregas(s) ? null : s.executadas;
+      acumuladas += entregues ?? 0;
+      return { sprint: s.rotulo, planejadas: s.planejadas, entregues, acumuladas };
+    });
+  });
+
+  /** Aba "Resumo da Sprint": desempenho de cada sprint e indicadores das já concluídas. */
+  readonly resumoSprints = computed<ResumoSprints>(() => {
+    const linhas: DesempenhoSprint[] = this.sprints().map((s) => {
+      const concluidas = semEntregas(s) ? null : s.executadas;
+      return {
+        sprint: s.nome,
+        periodo:
+          s.dataInicio && s.dataFim ? `${dataBr(s.dataInicio)} a ${dataBr(s.dataFim)}` : '',
+        planejadas: s.planejadas,
+        concluidas,
+        percentual:
+          concluidas === null || !s.planejadas
+            ? null
+            : Math.round((concluidas / s.planejadas) * 100),
+        status: rotuloStatus(s.status),
+        tom: tomSprint(s.status),
+      };
+    });
+    const concluidas = this.sprints().filter((s) => s.status === 'CONCLUIDA');
+    const planejadas = concluidas.reduce((acc, s) => acc + s.planejadas, 0);
+    const entregues = concluidas.reduce((acc, s) => acc + s.executadas, 0);
+    return {
+      sprintsConcluidas: concluidas.length,
+      totalSprints: linhas.length,
+      planejadas,
+      entregues,
+      aderencia: planejadas ? Math.round((entregues / planejadas) * 100) : null,
+      linhas,
+    };
+  });
+
+  /** Totais da evolução: desenvolvidas × a desenvolver. */
   readonly resumoTarefas = computed(() => {
     const evo = this.evolucao();
     const planejadoTotal = evo.reduce((acc, s) => acc + (s.planejadas || 0), 0);
     const desenvolvidas = evo.reduce((acc, s) => acc + (s.entregues ?? 0), 0);
-    const aDesenvolver = Math.max(0, planejadoTotal - desenvolvidas);
-    const percentualDesenvolvidas = planejadoTotal
-      ? Math.round((desenvolvidas / planejadoTotal) * 100)
-      : 0;
     return {
       planejadoTotal,
       desenvolvidas,
-      aDesenvolver,
-      percentualDesenvolvidas,
+      aDesenvolver: Math.max(0, planejadoTotal - desenvolvidas),
+      percentualDesenvolvidas: planejadoTotal
+        ? Math.round((desenvolvidas / planejadoTotal) * 100)
+        : 0,
     };
   });
 
+  readonly pendencias = computed<PendenciaPainel[]>(() =>
+    (this.painel()?.pendencias ?? []).map((p) => ({
+      id: p.codigo,
+      tema: p.tema,
+      pergunta: p.pergunta ?? '',
+      responsavel: p.responsavel ?? '',
+      prazo: p.prazo ? dataBr(p.prazo) : '',
+      status: rotuloStatus(p.status),
+      tom: tom(p.status),
+      impacto: rotuloNivel(p.impacto),
+      nivelImpacto: p.impacto ?? '',
+    })),
+  );
+
+  readonly riscos = computed<RiscoPainel[]>(() =>
+    (this.painel()?.riscos ?? []).map((r) => ({
+      id: r.codigo,
+      risco: r.titulo,
+      descricao: r.descricao ?? '',
+      impacto: rotuloNivel(r.impacto),
+      nivelImpacto: r.impacto ?? '',
+      probabilidade: rotuloNivel(r.probabilidade, true),
+      nivelProbabilidade: r.probabilidade ?? '',
+      mitigacao: r.mitigacao ?? '',
+      responsavel: r.responsavel ?? '',
+      status: rotuloStatus(r.status),
+      tom: tom(r.status),
+    })),
+  );
+
+  readonly fluxos = computed<FluxoBizagi[]>(() =>
+    (this.painel()?.fluxos ?? []).map((f) => ({
+      seq: f.seq,
+      id: f.codigo,
+      nome: f.nome,
+      descricao: f.descricao ?? '',
+      status: rotuloStatus(f.status),
+      tom: tom(f.status),
+      atualizadoEm: f.dataAtualizacao ? dataBr(f.dataAtualizacao) : '',
+    })),
+  );
+
+  /** Carrega a lista de projetos e o painel do projeto em acompanhamento. */
   async carregar(): Promise<void> {
     try {
-      // cache-bust: evita Excel antigo no navegador
-      const url = `${EXCEL_URL}?v=${Date.now()}`;
-      const buffer = await firstValueFrom(
-        this.http.get(url, {
-          responseType: 'arraybuffer',
-          headers: {
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            Pragma: 'no-cache',
-          },
+      const pagina = await firstValueFrom(
+        this.http.get<Pagina<Projeto>>(this.base, {
+          params: { size: 200, sort: 'nome', direction: 'ASC' },
         }),
       );
-      const data = parseProjetoWorkbook(buffer);
-      this.aplicar(data);
-      console.info(
-        '[projeto] planilha carregada · fluxos:',
-        data.fluxos.map((f) => `${f.seq}:${f.id}`).join(' → '),
-      );
-    } catch (err) {
-      console.error('Falha ao carregar planilha; usando fallback vazio.', err);
-      this.aplicar(CONTEUDO_FALLBACK);
+      this.projetos.set(pagina.content);
+      const escolhido = escolherProjeto(pagina.content, lerProjetoSalvo());
+      if (escolhido) {
+        await this.buscarPainel(escolhido.id);
+      } else {
+        this.painel.set(null);
+        this.erro.set('Nenhum projeto cadastrado. Cadastre um projeto em Administração > Projetos.');
+      }
+    } catch (e) {
+      this.erro.set(`Não foi possível carregar os dados da API: ${mensagemErro(e)}`);
     } finally {
       this.carregado.set(true);
     }
   }
 
-  fluxoPorId(id: string): FluxoBizagi | undefined {
-    return this.fluxos().find((f) => f.id === id);
+  /** Recarrega projetos e painel ao abrir uma página (reflete o que foi alterado na Administração). */
+  async atualizar(): Promise<void> {
+    if (Date.now() - this.painelCarregadoEm < INTERVALO_MINIMO_MS) return;
+    await this.carregar();
   }
 
-  private aplicar(data: ProjetoConteudo): void {
-    this.fonte.set(data.fonte);
-    this.geradoEm.set(data.geradoEm);
-    this.resumo.set(data.resumo ?? CONTEUDO_FALLBACK.resumo);
-    this.entregues.set(data.entregues ?? []);
-    this.proximaSprint.set(data.proximaSprint ?? []);
-    this.pendencias.set(data.pendencias ?? []);
-    this.evolucao.set(data.evolucao ?? []);
-    this.riscos.set(data.riscos ?? []);
-    const fluxos = [...(data.fluxos ?? [])].sort(
-      (a, b) => a.seq - b.seq || a.nome.localeCompare(b.nome, 'pt-BR'),
+  async selecionarProjeto(id: string): Promise<void> {
+    salvarProjeto(id);
+    try {
+      await this.buscarPainel(id);
+    } catch (e) {
+      this.erro.set(`Não foi possível carregar os dados da API: ${mensagemErro(e)}`);
+    }
+  }
+
+  private async buscarPainel(projetoId: string): Promise<void> {
+    const painel = await firstValueFrom(
+      this.http.get<Painel>(`${this.base}/${projetoId}/painel`),
     );
-    this.fluxos.set(fluxos);
+    this.painel.set(painel);
+    this.painelCarregadoEm = Date.now();
+    this.erro.set(null);
+    salvarProjeto(projetoId);
+  }
+}
+
+/** Mesma regra da API: o campo sprint é igual ao nome ou começa por ele seguido de espaço. */
+function pertence(textoSprint: string | null, sprint: Sprint): boolean {
+  if (!textoSprint) return false;
+  const texto = textoSprint.trim().toLowerCase();
+  const nome = sprint.nome.toLowerCase();
+  return texto === nome || texto.startsWith(`${nome} `);
+}
+
+/** Sprint que ainda não começou a entregar: sem execução informada nem atividades concluídas. */
+function semEntregas(s: Sprint): boolean {
+  return s.status === 'PLANEJADA' && s.tarefasExecutadas === null && s.executadas === 0;
+}
+
+function tomSprint(status: Sprint['status']): TomBadge {
+  switch (status) {
+    case 'CONCLUIDA':
+      return 'concluido';
+    case 'EM_ANDAMENTO':
+      return 'aguardando';
+    case 'CANCELADA':
+      return 'cancelado';
+    default:
+      return 'pendente';
+  }
+}
+
+function itemAtividade(a: Atividade): ItemAtividade {
+  return {
+    sprint: a.sprint ?? '',
+    id: a.codigo,
+    funcionalidade: a.titulo,
+    descricao: a.descricao ?? '',
+    responsavel: a.responsavel ?? '',
+    status: rotuloStatus(a.status),
+    tom: tom(a.status),
+    observacoes: a.observacoes ?? '',
+  };
+}
+
+function tom(status: string): TomBadge {
+  switch (status) {
+    case 'CONCLUIDA':
+    case 'CONCLUIDO':
+    case 'RESOLVIDA':
+    case 'RESOLVIDO':
+    case 'MITIGADO':
+    case 'APROVADO':
+      return 'concluido';
+    case 'AGUARDANDO_APROVACAO':
+      return 'aguardando';
+    case 'EM_ATRASO':
+    case 'BLOQUEADA':
+      return 'atraso';
+    case 'CANCELADA':
+    case 'CANCELADO':
+    case 'INATIVO':
+      return 'cancelado';
+    default:
+      return 'pendente';
+  }
+}
+
+function escolherProjeto(projetos: Projeto[], salvo: string | null): Projeto | undefined {
+  return (
+    projetos.find((p) => p.id === salvo) ??
+    projetos.find((p) => p.status === 'EM_ANDAMENTO') ??
+    projetos[0]
+  );
+}
+
+function lerProjetoSalvo(): string | null {
+  try {
+    return localStorage.getItem(STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function salvarProjeto(id: string): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, id);
+  } catch {
+    // ignore
   }
 }

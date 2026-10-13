@@ -44,3 +44,9 @@ Colunas: **Seq** · ID · Nome · Descrição · Imagem · **Status** · Atualiz
 npm install
 npm start
 ```
+
+## API (backend)
+
+Em `backend/` há uma API Spring Boot + PostgreSQL com cadastro de projetos e atividades vinculadas,
+incluindo importação desta mesma planilha. O frontend ainda não consome a API.
+Veja [backend/README.md](backend/README.md).

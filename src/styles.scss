@@ -56,36 +56,343 @@ img {
   display: block;
 }
 
-/* Status do fluxo (somente o badge) */
-.badge[data-status='Aguardando aprovação'],
-.badge[data-status='aguardando aprovação'],
-.badge[data-status='Aguardando Aprovação'] {
-  background: #ffe566 !important;
-  color: #7a6200 !important;
+/* Badges das páginas do portal: `data-tom` (status) e `data-nivel` (ALTO, MEDIO, BAIXO) */
+.badge {
+  display: inline-flex;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: var(--mercury);
+  color: var(--charcoal);
+  white-space: nowrap;
+}
+
+.badge[data-tom='concluido'],
+.badge[data-nivel='BAIXO'] {
+  background: color-mix(in srgb, var(--success) 16%, white);
+  color: var(--success);
+}
+
+.badge[data-tom='pendente'],
+.badge[data-nivel='MEDIO'] {
+  background: color-mix(in srgb, var(--warning) 18%, white);
+  color: #8a5a00;
+}
+
+.badge[data-tom='aguardando'] {
+  background: #ffe566;
+  color: #7a6200;
   border: 1px solid #f0c400;
 }
 
-.badge[data-status='Aprovado'],
-.badge[data-status='aprovado'] {
-  background: color-mix(in srgb, var(--success) 16%, white) !important;
-  color: var(--success) !important;
-  border: 1px solid color-mix(in srgb, var(--success) 35%, white);
+.badge[data-nivel='ALTO'] {
+  background: color-mix(in srgb, var(--danger) 14%, white);
+  color: var(--danger);
 }
 
-.badge[data-status='Em refinamento'],
-.badge[data-status='em refinamento'],
-.badge[data-status='Refinamento'],
-.badge[data-status='refinamento'] {
-  background: color-mix(in srgb, var(--danger) 14%, white) !important;
-  color: var(--danger) !important;
-  border: 1px solid color-mix(in srgb, var(--danger) 35%, white);
+.badge[data-tom='atraso'] {
+  background: var(--danger);
+  color: #ffffff;
+  border: 1px solid color-mix(in srgb, var(--danger) 80%, black);
 }
 
-/* Qualquer status em atraso ("Em atraso", "Atrasado", "Atrasada"...) em todas as páginas */
-.badge[data-status*='atras' i],
-.badge[data-status*='vencid' i] {
-  background: var(--danger) !important;
-  color: #ffffff !important;
-  border: 1px solid color-mix(in srgb, var(--danger) 80%, black) !important;
+.badge[data-tom='cancelado'] {
+  background: var(--mercury);
+  color: var(--dove);
+  text-decoration: line-through;
+}
+
+/* ── Área administrativa (compartilhado pelas páginas admin-*) ───────── */
+.adm-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+
+  h2 {
+    margin: 0 0 0.35rem;
+  }
+
+  p {
+    margin: 0;
+    color: var(--dove);
+    max-width: 48rem;
+    line-height: 1.45;
+  }
+}
+
+.adm-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.adm-btn {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--charcoal);
+  border-radius: 8px;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+
+  &:hover:not(:disabled) {
+    border-color: var(--orange-primary);
+    color: var(--orange-primary);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+.adm-btn--primary {
+  background: var(--orange-primary);
+  border-color: var(--orange-primary);
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background: var(--orange-deep);
+    border-color: var(--orange-deep);
+    color: #fff;
+  }
+}
+
+.adm-btn--danger:hover:not(:disabled) {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.adm-btn--sm {
+  padding: 0.25rem 0.55rem;
+  font-size: 0.78rem;
+}
+
+.adm-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+  margin-bottom: 1rem;
+
+  h3 {
+    margin: 0 0 0.75rem;
+    font-size: 1.05rem;
+    color: var(--tundora);
+  }
+}
+
+.adm-dica {
+  margin: 0 0 0.85rem;
+  color: var(--dove);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.adm-panel details {
+  font-size: 0.85rem;
+  color: var(--charcoal);
+
+  summary {
+    cursor: pointer;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 1.2rem;
+    max-height: 14rem;
+    overflow: auto;
+  }
+}
+
+.adm-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: flex-end;
+  margin-bottom: 1rem;
+}
+
+.adm-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--dove);
+  min-width: 0;
+
+  input,
+  select,
+  textarea {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.45rem 0.6rem;
+    background: var(--surface);
+    color: var(--charcoal);
+    font-size: 0.9rem;
+    font-weight: 400;
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 4.5rem;
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus {
+    outline: 2px solid color-mix(in srgb, var(--orange-primary) 40%, white);
+    border-color: var(--orange-primary);
+  }
+}
+
+.adm-field--wide {
+  grid-column: 1 / -1;
+}
+
+.adm-field__erro {
+  color: var(--danger);
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.adm-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 0.75rem 1rem;
+}
+
+.adm-form__foot {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 0.25rem;
+}
+
+.adm-alert {
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  border: 1px solid;
+}
+
+.adm-alert--erro {
+  background: color-mix(in srgb, var(--danger) 8%, white);
+  border-color: color-mix(in srgb, var(--danger) 35%, white);
+  color: var(--danger);
+}
+
+.adm-alert--ok {
+  background: color-mix(in srgb, var(--success) 10%, white);
+  border-color: color-mix(in srgb, var(--success) 35%, white);
+  color: var(--success);
+}
+
+.adm-table {
+  overflow: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.5rem 0.85rem 0.85rem;
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+
+  th,
+  td {
+    text-align: left;
+    padding: 0.55rem 0.4rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+
+  th {
+    color: var(--dove);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .adm-table__strong {
+    font-weight: 700;
+    color: var(--tundora);
+    white-space: nowrap;
+  }
+
+  .adm-table__acoes {
+    white-space: nowrap;
+    text-align: right;
+  }
+
+  .adm-table__vazio {
+    color: var(--dove);
+    text-align: center;
+    padding: 1.25rem 0.5rem;
+  }
+}
+
+.adm-pager {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--dove);
+}
+
+.adm-badge {
+  display: inline-flex;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
   font-weight: 700;
+  white-space: nowrap;
+  background: var(--mercury);
+  color: var(--charcoal);
+}
+
+select.adm-badge {
+  border: 0;
+  cursor: pointer;
+  padding-right: 0.35rem;
+}
+
+.adm-badge[data-tom='andamento'] {
+  background: color-mix(in srgb, var(--info) 14%, white);
+  color: var(--info);
+}
+
+.adm-badge[data-tom='concluido'] {
+  background: color-mix(in srgb, var(--success) 16%, white);
+  color: var(--success);
+}
+
+.adm-badge[data-tom='alerta'] {
+  background: color-mix(in srgb, var(--warning) 20%, white);
+  color: #8a5a00;
+}
+
+.adm-badge[data-tom='cancelado'] {
+  background: color-mix(in srgb, var(--danger) 12%, white);
+  color: var(--danger);
 }

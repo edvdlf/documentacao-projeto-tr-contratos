@@ -28,20 +28,30 @@
           <td class="nome">{{ item.risco }}</td>
           <td class="desc">{{ item.descricao }}</td>
           <td>
-            <span class="badge" [attr.data-nivel]="item.impacto">{{ item.impacto }}</span>
+            @if (item.impacto) {
+              <span class="badge" [attr.data-nivel]="item.nivelImpacto">{{ item.impacto }}</span>
+            } @else {
+              —
+            }
           </td>
           <td>
-            <span class="badge" [attr.data-nivel]="item.probabilidade">{{ item.probabilidade }}</span>
+            @if (item.probabilidade) {
+              <span class="badge" [attr.data-nivel]="item.nivelProbabilidade">{{
+                item.probabilidade
+              }}</span>
+            } @else {
+              —
+            }
           </td>
           <td class="desc">{{ item.mitigacao }}</td>
           <td>{{ item.responsavel }}</td>
           <td>
-            <span class="badge" [attr.data-status]="item.status">{{ item.status }}</span>
+            <span class="badge" [attr.data-tom]="item.tom">{{ item.status }}</span>
           </td>
         </tr>
       } @empty {
         <tr>
-          <td colspan="8" class="empty">Nenhum risco registrado na planilha.</td>
+          <td colspan="8" class="empty">Nenhum risco registrado.</td>
         </tr>
       }
     </tbody>

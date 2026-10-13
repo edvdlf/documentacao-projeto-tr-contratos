@@ -8,4 +8,8 @@ import { ProjetoService } from '../../services/projeto.service';
 })
 export class PendenciasComponent {
   readonly projeto = inject(ProjetoService);
+
+  constructor() {
+    void this.projeto.atualizar();
+  }
 }

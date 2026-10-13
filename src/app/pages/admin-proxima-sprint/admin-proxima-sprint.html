@@ -1,0 +1,194 @@
+<section class="adm-head">
+  <div>
+    <h2>Próxima sprint</h2>
+    <p>
+      Monte o planejamento da próxima sprint adicionando os itens um a um. O portal exibe, em
+      <strong>Próxima Sprint</strong>, a primeira sprint (pela data) que não está concluída nem
+      cancelada.
+    </p>
+  </div>
+  <div class="adm-actions">
+    <a class="adm-btn" routerLink="/proxima-sprint">Ver no portal</a>
+  </div>
+</section>
+
+<div class="adm-filters">
+  <app-seletor-projeto [projetoId]="projeto()" (projetoAlterado)="aoSelecionarProjeto($event)" />
+  @if (sprintsAbertas().length) {
+    <label class="adm-field">
+      Sprint
+      <select
+        name="sprint"
+        [ngModel]="sprintSelecionada()?.id"
+        (ngModelChange)="selecionarSprint($event)"
+      >
+        @for (s of sprintsAbertas(); track s.id) {
+          <option [value]="s.id">
+            {{ s.rotulo }}{{ s.id === sprintPortal()?.id ? ' (exibida no portal)' : '' }}
+          </option>
+        }
+      </select>
+    </label>
+  }
+</div>
+
+@if (aviso(); as msg) {
+  <div class="adm-alert adm-alert--ok" role="status">{{ msg }}</div>
+}
+@if (erro(); as msg) {
+  <div class="adm-alert adm-alert--erro" role="alert">{{ msg }}</div>
+}
+
+@if (projetoAtual() && !carregando() && !sprintsAbertas().length) {
+  <div class="adm-alert adm-alert--erro" role="status">
+    Não há sprint planejada ou em andamento neste projeto.
+    <a routerLink="/admin/sprints" [queryParams]="{ projeto: projetoAtual()!.id }"
+      >Cadastre a próxima sprint</a
+    >
+    e volte aqui para adicionar os itens.
+  </div>
+}
+
+@if (sprintSelecionada(); as sprint) {
+  <section class="adm-panel">
+    <h3>
+      @if (emEdicao(); as alvo) {
+        Editar item {{ alvo.codigo }}
+      } @else {
+        Adicionar item à {{ sprint.nome }}
+      }
+    </h3>
+    <p class="adm-dica">
+      {{ dataBr(sprint.dataInicio) }} a {{ dataBr(sprint.dataFim) }} ·
+      {{ rotuloStatus(sprint.status) }}
+      @if (sprint.objetivo) {
+        · Objetivo: {{ sprint.objetivo }}
+      }
+      @if (sprint.id !== sprintPortal()?.id) {
+        · <strong>Esta não é a sprint exibida no portal.</strong>
+      }
+    </p>
+    @if (erroForm(); as msg) {
+      <div class="adm-alert adm-alert--erro" role="alert">{{ msg }}</div>
+    }
+    <form class="adm-form" (ngSubmit)="salvar()">
+      <label class="adm-field">
+        ID*
+        <input
+          #campoCodigo
+          name="codigo"
+          [(ngModel)]="form.codigo"
+          required
+          maxlength="50"
+          placeholder="Ex.: RF042"
+        />
+        @if (errosForm()['codigo']; as e) {
+          <span class="adm-field__erro">{{ e }}</span>
+        }
+      </label>
+      <label class="adm-field adm-field--wide">
+        Funcionalidade*
+        <input name="titulo" [(ngModel)]="form.titulo" required maxlength="300" />
+        @if (errosForm()['titulo']; as e) {
+          <span class="adm-field__erro">{{ e }}</span>
+        }
+      </label>
+      <label class="adm-field">
+        Responsável
+        <input name="responsavel" [(ngModel)]="form.responsavel" maxlength="200" />
+      </label>
+      <label class="adm-field">
+        Status
+        <select name="status" [(ngModel)]="form.status">
+          @for (s of statusOpcoes; track s.valor) {
+            <option [value]="s.valor">{{ s.rotulo }}</option>
+          }
+        </select>
+      </label>
+      <label class="adm-field adm-field--wide">
+        Descrição
+        <textarea name="descricao" [(ngModel)]="form.descricao" rows="2"></textarea>
+      </label>
+      <label class="adm-field adm-field--wide">
+        Observações
+        <textarea name="observacoes" [(ngModel)]="form.observacoes" rows="2"></textarea>
+      </label>
+      <div class="adm-form__foot">
+        @if (emEdicao()) {
+          <button type="button" class="adm-btn" (click)="novoItem()">Cancelar edição</button>
+        }
+        <button type="submit" class="adm-btn adm-btn--primary" [disabled]="salvando()">
+          @if (salvando()) {
+            Salvando…
+          } @else if (emEdicao()) {
+            Salvar
+          } @else {
+            Adicionar item
+          }
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <div class="adm-table">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Funcionalidade</th>
+          <th>Responsável</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (a of itens(); track a.id) {
+          <tr>
+            <td class="adm-table__strong">{{ a.codigo }}</td>
+            <td>
+              {{ a.titulo }}
+              @if (a.descricao) {
+                <br /><small class="adm-dica">{{ a.descricao }}</small>
+              }
+            </td>
+            <td>{{ a.responsavel || '-' }}</td>
+            <td>
+              <select
+                class="adm-badge"
+                [attr.data-tom]="tomStatus(a.status)"
+                [attr.aria-label]="'Status do item ' + a.codigo"
+                [ngModel]="a.status"
+                (ngModelChange)="alterarStatus(a, $event)"
+              >
+                @for (o of statusOpcoes; track o.valor) {
+                  <option [value]="o.valor">{{ o.rotulo }}</option>
+                }
+              </select>
+            </td>
+            <td class="adm-table__acoes">
+              <button type="button" class="adm-btn adm-btn--sm" (click)="editar(a)">Editar</button>
+              <button
+                type="button"
+                class="adm-btn adm-btn--sm adm-btn--danger"
+                (click)="excluir(a)"
+              >
+                Excluir
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="adm-table__vazio">
+              {{ carregando() ? 'Carregando…' : 'Nenhum item nesta sprint ainda.' }}
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    @if (itens().length) {
+      <div class="adm-pager">
+        <span>{{ itens().length }} item(ns) na {{ sprint.nome }}</span>
+      </div>
+    }
+  </div>
+}

@@ -1,20 +1,32 @@
 <section class="page-head">
   <h2>Fluxos Bizagi</h2>
   <p>
-    Lista dos processos do Sistema de Gestão de Contratos. A ordem segue a coluna
-    <strong>Seq</strong> da planilha ({{ projeto.fluxos().length }} fluxos).
+    Lista dos processos do projeto {{ projeto.projetoAtual()?.nome }}, na ordem do campo
+    <strong>Seq</strong> ({{ projeto.fluxos().length }} fluxos).
   </p>
 </section>
 
 <div class="toolbar">
-  <a
-    class="btn"
-    href="https://tr-contratos-doc-fluxos.vercel.app/#diagram/"
-    target="_blank"
-    rel="noopener noreferrer"
-  >
-    Abrir visualizador de fluxos
-  </a>
+  @if (urlVisualizador(); as url) {
+    <a class="btn" [href]="url" target="_blank" rel="noopener noreferrer">
+      Abrir visualizador de fluxos
+    </a>
+    @if (pacote()?.publicadoEm; as data) {
+      <span class="pacote-info">Publicado em {{ data | date: 'dd/MM/yyyy HH:mm' }}</span>
+    }
+  } @else {
+    <button type="button" class="btn" disabled>Abrir visualizador de fluxos</button>
+    <span class="pacote-info">
+      @if (erroPacote(); as msg) {
+        {{ msg }}
+      } @else if (pacote()) {
+        Nenhum pacote do Bizagi publicado ainda. Um administrador pode enviá-lo em
+        Administração &gt; Fluxos.
+      } @else {
+        Verificando pacote de fluxos…
+      }
+    </span>
+  }
 </div>
 
 <div class="table-wrap panel">
@@ -37,13 +49,13 @@
           <td class="nome">{{ fluxo.nome }}</td>
           <td class="desc">{{ fluxo.descricao || '—' }}</td>
           <td>
-            <span class="badge" [attr.data-status]="fluxo.status">{{ fluxo.status }}</span>
+            <span class="badge" [attr.data-tom]="fluxo.tom">{{ fluxo.status }}</span>
           </td>
           <td class="data">{{ fluxo.atualizadoEm || '—' }}</td>
         </tr>
       } @empty {
         <tr>
-          <td colspan="6" class="empty">Nenhum fluxo cadastrado na aba Fluxos Bizagi da planilha.</td>
+          <td colspan="6" class="empty">Nenhum fluxo cadastrado.</td>
         </tr>
       }
     </tbody>

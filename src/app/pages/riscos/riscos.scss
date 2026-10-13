@@ -60,47 +60,6 @@ th {
   max-width: 22rem;
 }
 
-.badge {
-  display: inline-flex;
-  padding: 0.15rem 0.5rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  background: var(--mercury);
-  white-space: nowrap;
-}
-
-.badge[data-nivel='Alto'],
-.badge[data-nivel='Alta'] {
-  background: color-mix(in srgb, var(--danger) 14%, white);
-  color: var(--danger);
-}
-
-.badge[data-nivel='Médio'],
-.badge[data-nivel='Média'] {
-  background: color-mix(in srgb, var(--warning) 18%, white);
-  color: #8a5a00;
-}
-
-.badge[data-nivel='Baixo'],
-.badge[data-nivel='Baixa'] {
-  background: color-mix(in srgb, var(--success) 14%, white);
-  color: var(--success);
-}
-
-.badge[data-status='Aberto'] {
-  background: color-mix(in srgb, var(--warning) 18%, white);
-  color: #8a5a00;
-}
-
-.badge[data-status='Mitigado'],
-.badge[data-status='Encerrado'],
-.badge[data-status='Resolvido'],
-.badge[data-status='resolvido'] {
-  background: color-mix(in srgb, var(--success) 16%, white);
-  color: var(--success);
-}
-
 .empty {
   color: var(--dove);
   text-align: center;

@@ -1,6 +1,9 @@
 <section class="page-head">
   <h2>Pendências, dúvidas e decisões</h2>
-  <p>Itens que dependem de alinhamento com a Thomson Reuters ({{ projeto.pendencias().length }} itens).</p>
+  <p>
+    Itens que dependem de alinhamento com {{ projeto.projetoAtual()?.cliente || 'o cliente' }}
+    ({{ projeto.pendencias().length }} itens).
+  </p>
 </section>
 
 <div class="table-wrap panel">
@@ -25,10 +28,14 @@
           <td>{{ p.responsavel }}</td>
           <td>{{ p.prazo || '—' }}</td>
           <td>
-            <span class="badge" [attr.data-status]="p.status">{{ p.status }}</span>
+            <span class="badge" [attr.data-tom]="p.tom">{{ p.status }}</span>
           </td>
           <td>
-            <span class="badge" [attr.data-nivel]="p.impacto">{{ p.impacto }}</span>
+            @if (p.impacto) {
+              <span class="badge" [attr.data-nivel]="p.nivelImpacto">{{ p.impacto }}</span>
+            } @else {
+              —
+            }
           </td>
         </tr>
       } @empty {

@@ -1,0 +1,145 @@
+.page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.page-head h2 {
+  margin: 0 0 0.35rem;
+}
+
+.page-head p {
+  margin: 0 0 1rem;
+  color: var(--dove);
+}
+
+.page-head__acao {
+  flex-shrink: 0;
+  background: var(--orange-primary);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.88rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: 6px;
+}
+
+.page-head__acao:hover {
+  background: var(--orange-deep);
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+}
+
+.kpi--destaque {
+  border-color: var(--orange-primary);
+  box-shadow: inset 4px 0 0 var(--orange-primary);
+}
+
+.kpi__rotulo {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--dove);
+}
+
+.kpi__valor {
+  font-size: 1.9rem;
+  line-height: 1.1;
+  color: var(--tundora);
+}
+
+.kpi__dica {
+  font-size: 0.8rem;
+  color: var(--dove);
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.5rem 0.85rem 0.85rem;
+}
+
+.panel h3 {
+  margin: 0.4rem 0 0.5rem;
+}
+
+.table-wrap {
+  overflow: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.55rem 0.4rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+th {
+  color: var(--dove);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.nome {
+  font-weight: 700;
+  color: var(--tundora);
+  white-space: nowrap;
+}
+
+.periodo {
+  white-space: nowrap;
+  color: var(--dove);
+}
+
+.percentual {
+  min-width: 9rem;
+}
+
+.percentual__conteudo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.barra {
+  flex: 1;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--mercury);
+  overflow: hidden;
+}
+
+.barra__fill {
+  height: 100%;
+  background: var(--success);
+}
+
+.empty {
+  color: var(--dove);
+  text-align: center;
+  padding: 1.25rem 0.5rem;
+}

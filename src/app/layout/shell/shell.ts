@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { PORTAL, PROJETO } from '../../data/projeto.identidade';
+import { PORTAL } from '../../data/projeto.identidade';
 import { AuthService } from '../../services/auth.service';
 import { ProjetoService } from '../../services/projeto.service';
 
@@ -15,7 +15,6 @@ const STORAGE_KEY = 'docs-tr-sidebar-collapsed';
 export class ShellComponent {
   readonly ano = new Date().getFullYear();
   readonly portal = PORTAL;
-  readonly projetoInfo = PROJETO;
   readonly projeto = inject(ProjetoService);
   readonly auth = inject(AuthService);
   private readonly router = inject(Router);
@@ -26,6 +25,10 @@ export class ShellComponent {
     const next = !this.collapsed();
     this.collapsed.set(next);
     this.persistCollapsed(next);
+  }
+
+  selecionarProjeto(evento: Event): void {
+    void this.projeto.selecionarProjeto((evento.target as HTMLSelectElement).value);
   }
 
   logout(): void {

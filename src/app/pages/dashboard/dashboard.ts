@@ -1,6 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { PORTAL, PROJETO } from '../../data/projeto.identidade';
+import { PORTAL } from '../../data/projeto.identidade';
 import { ProjetoService } from '../../services/projeto.service';
 
 @Component({
@@ -11,8 +11,11 @@ import { ProjetoService } from '../../services/projeto.service';
 })
 export class DashboardComponent {
   readonly portal = PORTAL;
-  readonly projetoInfo = PROJETO;
   readonly projeto = inject(ProjetoService);
+
+  constructor() {
+    void this.projeto.atualizar();
+  }
 
   readonly tarefas = computed(() => this.projeto.resumoTarefas());
 
