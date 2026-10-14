@@ -57,6 +57,10 @@ export const routes: Routes = [
         redirectTo: '/bizagi',
       },
       {
+        path: 'power-bi',
+        loadComponent: () => import('./pages/power-bi/power-bi').then((m) => m.PowerBiComponent),
+      },
+      {
         path: 'admin',
         canActivate: [adminGuard],
         children: [
@@ -110,6 +114,11 @@ export const routes: Routes = [
               }),
           },
           { path: 'importacoes', redirectTo: 'projetos' },
+          {
+            path: 'usuarios',
+            loadComponent: () =>
+              import('./pages/admin-usuarios/admin-usuarios').then((m) => m.AdminUsuariosComponent),
+          },
           {
             path: 'acessos',
             loadComponent: () =>

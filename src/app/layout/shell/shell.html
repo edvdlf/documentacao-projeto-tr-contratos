@@ -54,10 +54,18 @@
         <span class="sidebar__icon" aria-hidden="true">!</span>
         <span class="sidebar__label">Riscos</span>
       </a>
-      <a routerLink="/bizagi" routerLinkActive="is-active" title="Fluxos Bizagi">
-        <span class="sidebar__icon" aria-hidden="true">F</span>
-        <span class="sidebar__label">Fluxos Bizagi</span>
-      </a>
+      @if (projeto.recursos().bizagi) {
+        <a routerLink="/bizagi" routerLinkActive="is-active" title="Fluxos Bizagi">
+          <span class="sidebar__icon" aria-hidden="true">F</span>
+          <span class="sidebar__label">Fluxos Bizagi</span>
+        </a>
+      }
+      @if (projeto.recursos().powerBi) {
+        <a routerLink="/power-bi" routerLinkActive="is-active" title="Power BI">
+          <span class="sidebar__icon" aria-hidden="true">B</span>
+          <span class="sidebar__label">Power BI</span>
+        </a>
+      }
       @if (auth.isAdmin()) {
         <div class="sidebar__group">
           <a routerLink="/admin" routerLinkActive="is-active" class="sidebar__group-title" title="Administração">
@@ -72,6 +80,7 @@
             <a routerLink="/admin/fluxos" routerLinkActive="is-active">Fluxos</a>
             <a routerLink="/admin/pendencias" routerLinkActive="is-active">Pendências</a>
             <a routerLink="/admin/riscos" routerLinkActive="is-active">Riscos</a>
+            <a routerLink="/admin/usuarios" routerLinkActive="is-active">Usuários</a>
             <a routerLink="/admin/acessos" routerLinkActive="is-active">Histórico de acessos</a>
           </div>
         </div>

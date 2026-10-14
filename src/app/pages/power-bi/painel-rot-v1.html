@@ -1,0 +1,122 @@
+<div class="rot">
+  <header class="rot-topo">
+    <div>
+      <p class="rot-topo__kicker">Portal de Projetos VetorIT · Acompanhamento de projetos</p>
+      <h3 class="rot-topo__titulo">{{ dados().titulo }}</h3>
+    </div>
+  </header>
+
+  <div class="rot-kpis" aria-live="polite">
+    <article class="rot-kpi rot-kpi--total">
+      <span class="rot-kpi__rotulo">Retificações selecionadas</span>
+      <strong class="rot-kpi__valor">{{ store.total() }}</strong>
+      <span class="rot-kpi__extra">{{ store.descricaoPeriodo() }}</span>
+    </article>
+    @for (k of store.indicadores(); track k.chave) {
+      <article class="rot-kpi" [style.--cor]="k.cor" [title]="k.dica">
+        <span class="rot-kpi__rotulo">
+          <i class="rot-ponto" aria-hidden="true"></i>{{ k.rotulo }}
+        </span>
+        <strong class="rot-kpi__valor">{{ k.valor }}</strong>
+        <div
+          class="rot-kpi__barra"
+          role="progressbar"
+          [attr.aria-label]="k.rotulo"
+          [attr.aria-valuenow]="k.percentual"
+          aria-valuemin="0"
+          aria-valuemax="100"
+        >
+          <span [style.width.%]="k.percentual"></span>
+        </div>
+        <span class="rot-kpi__extra">{{ k.percentual }}% do total</span>
+      </article>
+    }
+  </div>
+
+  <div class="rot-filtros">
+    <section class="rot-filtro rot-filtro--anos" aria-label="Ano">
+      <h4>Ano</h4>
+      <div class="rot-chips">
+        @for (ano of store.anos(); track ano) {
+          <button
+            type="button"
+            [class.is-on]="store.anosSel().has(ano)"
+            [attr.aria-pressed]="store.anosSel().has(ano)"
+            (click)="store.selecionar('anos', ano, $event)"
+          >
+            {{ ano }}
+          </button>
+        }
+      </div>
+    </section>
+    <section class="rot-filtro rot-filtro--meses" aria-label="Mês">
+      <h4>Mês</h4>
+      <div class="rot-chips">
+        @for (mes of meses; track mes; let i = $index) {
+          <button
+            type="button"
+            [class.is-on]="store.mesesSel().has(i + 1)"
+            [attr.aria-pressed]="store.mesesSel().has(i + 1)"
+            (click)="store.selecionar('meses', i + 1, $event)"
+          >
+            {{ mes }}
+          </button>
+        }
+      </div>
+    </section>
+  </div>
+
+  <ul class="rot-legenda" aria-label="Legenda de cores">
+    @for (s of legenda; track s.chave) {
+      <li [style.--cor]="s.cor"><i class="rot-ponto" aria-hidden="true"></i>{{ s.rotulo }}</li>
+    }
+  </ul>
+
+  <div class="rot-graficos">
+    @for (g of store.graficos(); track g.chave) {
+      <section class="rot-card">
+        <h4>{{ g.titulo }}</h4>
+        @if (g.barras.length) {
+          <app-barras-grafico [barras]="g.barras" [titulo]="g.titulo" />
+        } @else {
+          <p class="rot-vazio">Nenhuma retificação na seleção.</p>
+        }
+      </section>
+    }
+  </div>
+
+  <section class="rot-filtro" aria-label="Municípios">
+    <h4>Municípios</h4>
+    <div class="rot-chips rot-chips--cidades">
+      <button
+        type="button"
+        [class.is-on]="store.cidadesSel().size === 0"
+        [attr.aria-pressed]="store.cidadesSel().size === 0"
+        (click)="store.definir('cidades', [])"
+      >
+        Selecionar tudo
+      </button>
+      @for (cidade of store.cidades(); track cidade; let i = $index) {
+        <button
+          type="button"
+          [title]="cidade"
+          [class.is-on]="store.cidadesSel().has(i)"
+          [attr.aria-pressed]="store.cidadesSel().has(i)"
+          (click)="store.selecionar('cidades', i, $event)"
+        >
+          {{ cidade }}
+        </button>
+      }
+    </div>
+  </section>
+
+  <footer class="rot-rodape">
+    <span>
+      Clique para selecionar; Ctrl+clique para somar vários. Dados de {{ dados().origem }},
+      atualizados em {{ dados().geradoEm | date: 'dd/MM/yyyy HH:mm' }}.
+    </span>
+    @if (linkPowerBi(); as link) {
+      <a [href]="link" target="_blank" rel="noopener noreferrer">Abrir no Power BI</a>
+    }
+  </footer>
+</div>

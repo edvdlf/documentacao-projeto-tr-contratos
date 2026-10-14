@@ -1,0 +1,51 @@
+.rot-barra {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.rot-versoes {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--mercury);
+
+  button {
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    padding: 0.35rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--dove);
+    cursor: pointer;
+
+    &.is-on {
+      background: var(--surface);
+      color: var(--orange-primary);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--orange-primary);
+      outline-offset: 1px;
+    }
+  }
+}
+
+.rot-envio {
+  margin-bottom: 0.75rem;
+}
+
+.adm-alert {
+  margin: 0 0 0.75rem;
+}
+
+.rot-mensagem {
+  margin: 2rem auto;
+  color: var(--dove);
+  text-align: center;
+  font-size: 0.9rem;
+}

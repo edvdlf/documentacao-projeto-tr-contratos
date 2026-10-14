@@ -1,0 +1,237 @@
+<section class="adm-head">
+  <div>
+    <h2>Usuários</h2>
+    <p>Cadastre usuários, defina o perfil e os projetos que cada um pode acompanhar.</p>
+  </div>
+  <div class="adm-actions">
+    <button type="button" class="adm-btn adm-btn--primary" (click)="novo()">Novo usuário</button>
+  </div>
+</section>
+
+@if (aviso(); as msg) {
+  <div class="adm-alert adm-alert--ok" role="status">{{ msg }}</div>
+}
+@if (erro(); as msg) {
+  <div class="adm-alert adm-alert--erro" role="alert">{{ msg }}</div>
+}
+
+@if (emEdicao(); as alvo) {
+  <section class="adm-panel">
+    <h3>{{ alvo === 'novo' ? 'Novo usuário' : 'Editar usuário ' + alvo.login }}</h3>
+    @if (erroForm(); as msg) {
+      <div class="adm-alert adm-alert--erro" role="alert">{{ msg }}</div>
+    }
+    <form class="adm-form" (ngSubmit)="salvar()">
+      <label class="adm-field">
+        Login*
+        <input
+          name="login"
+          [(ngModel)]="form.login"
+          required
+          maxlength="150"
+          autocomplete="off"
+          placeholder="nome@empresa.com.br"
+        />
+        @if (errosForm()['login']; as e) {
+          <span class="adm-field__erro">{{ e }}</span>
+        }
+      </label>
+      <label class="adm-field">
+        Nome*
+        <input name="nome" [(ngModel)]="form.nome" required maxlength="200" />
+        @if (errosForm()['nome']; as e) {
+          <span class="adm-field__erro">{{ e }}</span>
+        }
+      </label>
+      <label class="adm-field">
+        {{ alvo === 'novo' ? 'Senha*' : 'Nova senha' }}
+        <input
+          type="password"
+          name="senha"
+          [(ngModel)]="form.senha"
+          [required]="alvo === 'novo'"
+          minlength="8"
+          maxlength="72"
+          autocomplete="new-password"
+          [placeholder]="alvo === 'novo' ? 'Mínimo de 8 caracteres' : 'Deixe em branco para manter'"
+        />
+        @if (errosForm()['senha']; as e) {
+          <span class="adm-field__erro">{{ e }}</span>
+        }
+      </label>
+      <label class="adm-field">
+        Perfil
+        <select name="perfil" [(ngModel)]="form.perfil">
+          @for (p of perfis; track p.valor) {
+            <option [value]="p.valor">{{ p.rotulo }}</option>
+          }
+        </select>
+      </label>
+      <label class="adm-field adm-usuarios__ativo">
+        <span>
+          <input type="checkbox" name="ativo" [(ngModel)]="form.ativo" />
+          Ativo
+        </span>
+      </label>
+
+      <fieldset class="adm-field adm-field--wide adm-usuarios__projetos">
+        <legend>Projetos vinculados{{ form.perfil === 'USUARIO' ? '*' : '' }}</legend>
+        @if (form.perfil === 'ADMIN') {
+          <p class="adm-usuarios__dica">Administradores acessam todos os projetos.</p>
+        } @else {
+          @for (p of projetos(); track p.id) {
+            <label class="adm-usuarios__projeto">
+              <input
+                type="checkbox"
+                [checked]="form.projetoIds.has(p.id)"
+                (change)="alternarProjeto(p.id, $any($event.target).checked)"
+              />
+              <span><strong>{{ p.codigo }}</strong> · {{ p.nome }}</span>
+            </label>
+          } @empty {
+            <p class="adm-usuarios__dica">Nenhum projeto cadastrado.</p>
+          }
+        }
+        @if (errosForm()['projetoIds']; as e) {
+          <span class="adm-field__erro">{{ e }}</span>
+        }
+      </fieldset>
+
+      <div class="adm-form__foot">
+        <button type="button" class="adm-btn" (click)="cancelar()">Cancelar</button>
+        <button type="submit" class="adm-btn adm-btn--primary" [disabled]="salvando()">
+          {{ salvando() ? 'Salvando…' : 'Salvar' }}
+        </button>
+      </div>
+    </form>
+  </section>
+}
+
+<form class="adm-filters" (ngSubmit)="buscar()">
+  <label class="adm-field">
+    Buscar
+    <input name="q" [(ngModel)]="filtros.q" placeholder="Login ou nome" />
+  </label>
+  <label class="adm-field">
+    Perfil
+    <select name="perfil" [(ngModel)]="filtros.perfil" (ngModelChange)="buscar()">
+      <option value="">Todos</option>
+      @for (p of perfis; track p.valor) {
+        <option [value]="p.valor">{{ p.rotulo }}</option>
+      }
+    </select>
+  </label>
+  <label class="adm-field">
+    Situação
+    <select name="ativo" [(ngModel)]="filtros.ativo" (ngModelChange)="buscar()">
+      <option value="">Todos</option>
+      <option value="true">Ativos</option>
+      <option value="false">Inativos</option>
+    </select>
+  </label>
+  <label class="adm-field">
+    Ordenar por
+    <select
+      name="sort"
+      [ngModel]="listagem().sort"
+      (ngModelChange)="alterarListagem({ sort: $event })"
+    >
+      @for (o of ordenacoes; track o.valor) {
+        <option [value]="o.valor">{{ o.rotulo }}</option>
+      }
+    </select>
+  </label>
+  <label class="adm-field">
+    Direção
+    <select
+      name="direction"
+      [ngModel]="listagem().direction"
+      (ngModelChange)="alterarListagem({ direction: $event })"
+    >
+      <option value="ASC">Crescente</option>
+      <option value="DESC">Decrescente</option>
+    </select>
+  </label>
+  <button type="submit" class="adm-btn">Buscar</button>
+</form>
+
+<div class="adm-table">
+  <table>
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Login</th>
+        <th>Perfil</th>
+        <th>Situação</th>
+        <th>Projetos</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (u of pagina()?.content ?? []; track u.id) {
+        <tr>
+          <td class="adm-table__strong">{{ u.nome }}</td>
+          <td>{{ u.login }}</td>
+          <td>{{ rotuloPerfil(u.perfil) }}</td>
+          <td>
+            <span class="adm-badge" [attr.data-tom]="u.ativo ? 'concluido' : 'cancelado'">
+              {{ u.ativo ? 'Ativo' : 'Inativo' }}
+            </span>
+          </td>
+          <td>
+            @if (u.perfil === 'ADMIN') {
+              Todos
+            } @else {
+              @for (p of u.projetos; track p.id; let ultimo = $last) {
+                <span [title]="p.nome">{{ p.codigo }}</span>{{ ultimo ? '' : ', ' }}
+              } @empty {
+                -
+              }
+            }
+          </td>
+          <td class="adm-table__acoes">
+            <button type="button" class="adm-btn adm-btn--sm" (click)="editar(u)">Editar</button>
+            <button type="button" class="adm-btn adm-btn--sm adm-btn--danger" (click)="excluir(u)">
+              Excluir
+            </button>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="6" class="adm-table__vazio">
+            {{ carregando() ? 'Carregando…' : 'Nenhum usuário encontrado.' }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  @if (pagina(); as p) {
+    @if (p.page.totalElements > 0) {
+      <div class="adm-pager">
+        <span
+          >Página {{ p.page.number + 1 }} de {{ p.page.totalPages }} ·
+          {{ p.page.totalElements }} usuário(s)</span
+        >
+        <div class="adm-actions">
+          <button
+            type="button"
+            class="adm-btn adm-btn--sm"
+            [disabled]="p.page.number === 0"
+            (click)="irParaPagina(p.page.number - 1)"
+          >
+            Anterior
+          </button>
+          <button
+            type="button"
+            class="adm-btn adm-btn--sm"
+            [disabled]="p.page.number + 1 >= p.page.totalPages"
+            (click)="irParaPagina(p.page.number + 1)"
+          >
+            Próxima
+          </button>
+        </div>
+      </div>
+    }
+  }
+</div>

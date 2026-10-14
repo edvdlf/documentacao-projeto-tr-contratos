@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { PORTAL } from '../../data/projeto.identidade';
 import { AuthService } from '../../services/auth.service';
@@ -21,6 +21,18 @@ export class ShellComponent {
 
   readonly collapsed = signal(this.readStoredCollapsed());
 
+  constructor() {
+    effect(() => {
+      const recursos = this.projeto.recursos();
+      const url = this.router.url;
+      if (url.startsWith('/bizagi') && !recursos.bizagi) {
+        void this.router.navigateByUrl(recursos.powerBi ? '/power-bi' : '/');
+      } else if (url.startsWith('/power-bi') && !recursos.powerBi) {
+        void this.router.navigateByUrl('/');
+      }
+    });
+  }
+
   toggleSidebar(): void {
     const next = !this.collapsed();
     this.collapsed.set(next);
@@ -33,6 +45,7 @@ export class ShellComponent {
 
   logout(): void {
     this.auth.logout();
+    this.projeto.limpar();
     void this.router.navigateByUrl('/login');
   }
 

@@ -328,6 +328,36 @@ export interface Painel {
   fluxos: Fluxo[];
 }
 
+export type PerfilUsuario = 'ADMIN' | 'USUARIO';
+
+export const PERFIS_USUARIO: { valor: PerfilUsuario; rotulo: string }[] = [
+  { valor: 'USUARIO', rotulo: 'Usuário' },
+  { valor: 'ADMIN', rotulo: 'Administrador' },
+];
+
+export interface Usuario {
+  id: string;
+  login: string;
+  nome: string;
+  perfil: PerfilUsuario;
+  ativo: boolean;
+  /** Vazio para ADMIN, que acessa todos os projetos. */
+  projetos: { id: string; codigo: string; nome: string }[];
+  criadoEm: string;
+  atualizadoEm: string;
+}
+
+export interface UsuarioRequest {
+  login: string;
+  nome: string;
+  /** Obrigatória na criação; na edição, null mantém a senha atual. */
+  senha: string | null;
+  perfil: PerfilUsuario;
+  ativo: boolean;
+  /** Ignorado para ADMIN; ao menos um para USUARIO. */
+  projetoIds: string[];
+}
+
 export interface ResultadoImportacao {
   criadas: number;
   atualizadas: number;

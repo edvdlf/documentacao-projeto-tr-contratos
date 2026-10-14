@@ -1,0 +1,89 @@
+<div class="rot-barra">
+  <div class="rot-versoes" role="group" aria-label="Visão do painel">
+    <button
+      type="button"
+      [class.is-on]="versao() === 1"
+      [attr.aria-pressed]="versao() === 1"
+      (click)="escolherVersao(1)"
+    >
+      Visão 1
+    </button>
+    <button
+      type="button"
+      [class.is-on]="versao() === 2"
+      [attr.aria-pressed]="versao() === 2"
+      (click)="escolherVersao(2)"
+    >
+      Visão 2
+    </button>
+  </div>
+  @if (podeAtualizar() && !mostrarEnvio() && store.estado().tipo !== 'vazio') {
+    <button type="button" class="adm-btn" (click)="mostrarEnvio.set(true)">
+      Atualizar planilha
+    </button>
+  }
+</div>
+
+@if (podeAtualizar()) {
+  @if (mostrarEnvio() || store.estado().tipo === 'vazio') {
+    <section class="adm-panel rot-envio">
+      <h3>Atualizar planilha do painel</h3>
+      <p class="adm-dica">
+        Envie a planilha <strong>Acompanhamento Retificações ROT - RJ</strong> (.xlsx), com as abas
+        <strong>Visão</strong> e <strong>Listas</strong>. Os dados atuais do painel serão
+        substituídos pelos da planilha enviada.
+      </p>
+      <div class="adm-filters">
+        <label class="adm-field">
+          Planilha (.xlsx)
+          <input type="file" accept=".xlsx" (change)="escolherArquivo($event)" />
+        </label>
+        <button
+          type="button"
+          class="adm-btn adm-btn--primary"
+          [disabled]="!arquivo() || enviando()"
+          (click)="enviar()"
+        >
+          {{ enviando() ? 'Enviando…' : 'Enviar e atualizar' }}
+        </button>
+        @if (store.estado().tipo !== 'vazio') {
+          <button type="button" class="adm-btn" (click)="mostrarEnvio.set(false)">Fechar</button>
+        }
+      </div>
+      @if (erroEnvio(); as msg) {
+        <div class="adm-alert adm-alert--erro" role="alert">{{ msg }}</div>
+      }
+    </section>
+  }
+  @if (avisoEnvio(); as msg) {
+    <div class="adm-alert adm-alert--ok" role="status">{{ msg }}</div>
+  }
+}
+
+@switch (store.estado().tipo) {
+  @case ('carregando') {
+    <p class="rot-mensagem">Carregando painel…</p>
+  }
+  @case ('vazio') {
+    <p class="rot-mensagem">
+      Nenhuma planilha foi enviada para este painel ainda.
+      @if (!podeAtualizar()) {
+        Um administrador precisa enviá-la.
+      }
+    </p>
+  }
+  @case ('erro') {
+    <p class="rot-mensagem">
+      Não foi possível carregar os dados do painel: {{ $any(store.estado()).mensagem }}
+    </p>
+  }
+  @default {
+    @if (store.dados(); as dados) {
+      @if (versao() === 1) {
+        <app-painel-rot-v1 [dados]="dados" [linkPowerBi]="linkPowerBi()" />
+      } @else {
+        <app-painel-rot-v2 [dados]="dados" [linkPowerBi]="linkPowerBi()" />
+      }
+    }
+  }
+}

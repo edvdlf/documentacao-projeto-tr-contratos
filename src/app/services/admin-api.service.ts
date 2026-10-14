@@ -25,12 +25,16 @@ import {
   StatusProjeto,
   StatusRisco,
   StatusSprint,
+  PerfilUsuario,
+  Usuario,
+  UsuarioRequest,
 } from '../models/admin.models';
 
 @Injectable({ providedIn: 'root' })
 export class AdminApiService {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiUrl}/api/projetos`;
+  private readonly usuarios = `${environment.apiUrl}/api/usuarios`;
 
   listarProjetos(q: string, listagem: Listagem): Observable<Pagina<Projeto>> {
     return this.http.get<Pagina<Projeto>>(this.base, { params: parametros({ q, ...listagem }) });
@@ -248,6 +252,27 @@ export class AdminApiService {
       `${this.base}/${projetoId}/importacoes/planilha`,
       formulario(arquivo),
     );
+  }
+
+  listarUsuarios(
+    filtros: { q: string; perfil: PerfilUsuario | ''; ativo: 'true' | 'false' | '' },
+    listagem: Listagem,
+  ): Observable<Pagina<Usuario>> {
+    return this.http.get<Pagina<Usuario>>(this.usuarios, {
+      params: parametros({ ...filtros, ...listagem }),
+    });
+  }
+
+  criarUsuario(req: UsuarioRequest): Observable<Usuario> {
+    return this.http.post<Usuario>(this.usuarios, req);
+  }
+
+  atualizarUsuario(id: string, req: UsuarioRequest): Observable<Usuario> {
+    return this.http.put<Usuario>(`${this.usuarios}/${id}`, req);
+  }
+
+  excluirUsuario(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.usuarios}/${id}`);
   }
 }
 

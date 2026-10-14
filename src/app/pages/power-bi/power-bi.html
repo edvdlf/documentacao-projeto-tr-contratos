@@ -1,0 +1,16 @@
+<section class="page-head">
+  <h2>Power BI</h2>
+  <p>Painel do projeto {{ projeto.projetoAtual()?.nome }}.</p>
+</section>
+
+@if (relatorio(); as r) {
+  @if (r.painelRetificacoes && projeto.projetoAtual(); as p) {
+    <app-painel-rot [projetoId]="p.id" [linkPowerBi]="r.url" [podeAtualizar]="auth.isAdmin()" />
+  } @else {
+    <div class="powerbi panel">
+      <iframe [title]="r.titulo" [src]="r.urlSegura" allowfullscreen></iframe>
+    </div>
+  }
+} @else {
+  <p class="empty panel">Este projeto não tem painel do Power BI configurado.</p>
+}

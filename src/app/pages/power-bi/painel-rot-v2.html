@@ -1,0 +1,292 @@
+<header class="v2-topo">
+  <div>
+    <h2>{{ dados().titulo }}</h2>
+    <p>
+      Fonte: {{ dados().origem }} · atualizado em {{ dataBr(dados().geradoEm.slice(0, 10)) }}
+    </p>
+  </div>
+  @if (linkPowerBi(); as link) {
+    <a class="adm-btn" [href]="link" target="_blank" rel="noopener">Abrir no Power BI ↗</a>
+  }
+</header>
+
+<section class="v2-filtros" aria-label="Filtros">
+  <label class="v2-campo">
+    <span>Ano</span>
+    <select
+      (change)="escolherPeriodo('anos', $any($event.target).value)"
+    >
+      <option value="" [selected]="valorSelect(store.anosSel()) === ''">Todos</option>
+      @if (store.anosSel().size > 1) {
+        <option value="varios" selected>(vários)</option>
+      }
+      @for (ano of store.anos(); track ano) {
+        <option [value]="ano" [selected]="valorSelect(store.anosSel()) === '' + ano">
+          {{ ano }}
+        </option>
+      }
+    </select>
+  </label>
+
+  <label class="v2-campo">
+    <span>Mês</span>
+    <select
+      (change)="escolherPeriodo('meses', $any($event.target).value)"
+    >
+      <option value="" [selected]="valorSelect(store.mesesSel()) === ''">Todos</option>
+      @if (store.mesesSel().size > 1) {
+        <option value="varios" selected>(vários)</option>
+      }
+      @for (mes of meses; track mes; let i = $index) {
+        <option [value]="i + 1" [selected]="valorSelect(store.mesesSel()) === '' + (i + 1)">
+          {{ mes }}
+        </option>
+      }
+    </select>
+  </label>
+
+  <div class="v2-campo v2-municipios" #seletorMunicipios>
+    <span>Município</span>
+    <button
+      type="button"
+      class="v2-seletor"
+      [attr.aria-expanded]="municipiosAbertos()"
+      (click)="municipiosAbertos.set(!municipiosAbertos())"
+    >
+      {{ rotuloMunicipios() }}
+      <span aria-hidden="true">▾</span>
+    </button>
+    @if (municipiosAbertos()) {
+      <div class="v2-lista-municipios">
+        <input
+          type="search"
+          placeholder="Buscar município…"
+          [value]="filtroMunicipio()"
+          (input)="filtroMunicipio.set($any($event.target).value)"
+        />
+        <ul>
+          @for (c of municipiosVisiveis(); track c.indice) {
+            <li>
+              <label>
+                <input
+                  type="checkbox"
+                  [checked]="store.cidadesSel().has(c.indice)"
+                  (change)="alternarMunicipio(c.indice)"
+                />
+                {{ c.nome }}
+              </label>
+            </li>
+          } @empty {
+            <li class="v2-vazio">Nenhum município encontrado.</li>
+          }
+        </ul>
+        @if (store.cidadesSel().size) {
+          <button type="button" class="v2-link" (click)="store.definir('cidades', [])">
+            Limpar municípios
+          </button>
+        }
+      </div>
+    }
+  </div>
+
+  <form class="v2-campo v2-busca" (submit)="$event.preventDefault(); buscar()">
+    <span>Estabelecimento</span>
+    <input
+      type="search"
+      placeholder="Código, CNPJ ou bairro"
+      [value]="termo"
+      (input)="termo = $any($event.target).value"
+      (search)="buscar()"
+    />
+  </form>
+
+  @if (temFiltros()) {
+    <button type="button" class="v2-link v2-limpar" (click)="limparFiltros()">Limpar filtros</button>
+  }
+
+  @if (store.nomesCidadesSel().length) {
+    <div class="v2-chips">
+      @for (nome of store.nomesCidadesSel(); track nome) {
+        <span class="v2-chip">
+          {{ nome }}
+          <button type="button" [attr.aria-label]="'Remover ' + nome" (click)="removerMunicipio(nome)">
+            ×
+          </button>
+        </span>
+      }
+    </div>
+  }
+</section>
+
+<section class="v2-kpis" aria-label="Indicadores">
+  <button
+    type="button"
+    class="v2-kpi v2-kpi--total"
+    [class.is-on]="situacao() === null"
+    (click)="escolherSituacao(null)"
+  >
+    <span class="v2-kpi__rotulo">Retificações</span>
+    <strong>{{ store.total().toLocaleString('pt-BR') }}</strong>
+    <span class="v2-kpi__dica">{{ store.descricaoPeriodo() }}</span>
+  </button>
+  @for (k of store.indicadores(); track k.chave) {
+    <button
+      type="button"
+      class="v2-kpi"
+      [style.--cor]="k.cor"
+      [class.is-on]="situacao() === k.chave"
+      [attr.aria-pressed]="situacao() === k.chave"
+      [title]="k.dica + ' — clique para listar'"
+      (click)="escolherSituacao(k.chave)"
+    >
+      <span class="v2-kpi__rotulo">{{ k.rotulo }}</span>
+      <strong>{{ k.valor.toLocaleString('pt-BR') }}</strong>
+      <span class="v2-kpi__barra"><span [style.width.%]="k.percentual"></span></span>
+      <span class="v2-kpi__dica">{{ k.percentual }}% do total</span>
+    </button>
+  }
+</section>
+
+<section class="adm-panel v2-tabela">
+  <header>
+    <h3>
+      Estabelecimentos
+      @if (rotuloSituacao(); as rotulo) {
+        <span class="v2-filtro-card">
+          {{ rotulo }}
+          <button type="button" aria-label="Mostrar todas" (click)="escolherSituacao(null)">×</button>
+        </span>
+      }
+    </h3>
+    <button
+      type="button"
+      class="adm-btn"
+      [disabled]="exportando() || !totalRegistros()"
+      [title]="'Exporta as ' + totalRegistros().toLocaleString('pt-BR') + ' linhas do filtro atual'"
+      (click)="exportar()"
+    >
+      {{ exportando() ? 'Gerando Excel…' : 'Exportar Excel' }}
+    </button>
+  </header>
+
+  @if (erro(); as msg) {
+    <div class="adm-alert adm-alert--erro" role="alert">{{ msg }}</div>
+  }
+
+  <p-table
+    [value]="linhas()"
+    dataKey="id"
+    [lazy]="true"
+    [loading]="carregando()"
+    [totalRecords]="totalRegistros()"
+    [first]="consulta().first"
+    [rows]="consulta().rows"
+    [sortField]="consulta().sortField"
+    [sortOrder]="consulta().sortOrder"
+    [paginator]="true"
+    [rowsPerPageOptions]="[20, 50, 100]"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="{first}–{last} de {totalRecords}"
+    [stripedRows]="true"
+    size="small"
+    [tableStyle]="{ 'min-width': '60rem' }"
+    (onLazyLoad)="navegar($event)"
+  >
+    <ng-template #header>
+      <tr>
+        <th style="width: 2.5rem"></th>
+        <th pSortableColumn="codEstab">Estabelecimento <p-sortIcon field="codEstab" /></th>
+        <th pSortableColumn="cidade">Município / bairro <p-sortIcon field="cidade" /></th>
+        <th pSortableColumn="periodo">Período <p-sortIcon field="periodo" /></th>
+        @for (e of etapasTabela; track e.chave) {
+          <th>{{ e.titulo }}</th>
+        }
+        <th pSortableColumn="situacao">Situação <p-sortIcon field="situacao" /></th>
+      </tr>
+    </ng-template>
+
+    <ng-template #body let-r let-expanded="expanded">
+      <tr>
+        <td>
+          <button
+            type="button"
+            class="v2-expandir"
+            [pRowToggler]="r"
+            [class.is-aberta]="expanded"
+            [attr.aria-label]="expanded ? 'Recolher detalhes' : 'Ver detalhes'"
+          >
+            ›
+          </button>
+        </td>
+        <td>
+          <strong>{{ r.codEstab || '-' }}</strong>
+          <small>{{ cnpj(r.cnpj) }}</small>
+        </td>
+        <td>
+          {{ r.cidade }}
+          <small>{{ r.bairro }}</small>
+        </td>
+        <td>{{ periodo(r.periodo) }}</td>
+        @for (e of etapasTabela; track e.chave) {
+          <td>
+            <span
+              class="v2-pilula"
+              [style.--cor]="corDaSituacao(r[e.chave].status)"
+              [title]="dicaEtapa(r[e.chave])"
+            >
+              {{ r[e.chave].acao }}
+            </span>
+          </td>
+        }
+        <td>
+          <span class="v2-situacao" [style.--cor]="corDaSituacao(r.situacao)">
+            {{ rotuloDaSituacao(r.situacao) }}
+          </span>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template #expandedrow let-r>
+      <tr class="v2-detalhe">
+        <td [attr.colspan]="5 + etapasTabela.length">
+          <div class="v2-detalhe__grade">
+            @for (e of etapasTabela; track e.chave) {
+              <div [style.--cor]="corDaSituacao(r[e.chave].status)">
+                <h4>{{ e.titulo }}</h4>
+                <p class="v2-detalhe__acao">{{ r[e.chave].acao }}</p>
+                <dl>
+                  <dt>Responsável</dt>
+                  <dd>{{ r[e.chave].responsavel || '-' }}</dd>
+                  <dt>Início</dt>
+                  <dd>{{ dataBr(r[e.chave].dataInicio) }}</dd>
+                  <dt>Conclusão</dt>
+                  <dd>{{ dataBr(r[e.chave].dataConclusao) }}</dd>
+                </dl>
+                @if (r[e.chave].observacoes) {
+                  <p class="v2-detalhe__obs">{{ r[e.chave].observacoes }}</p>
+                }
+                @if (e.chave === 'assessment' && r.divergencias) {
+                  <p class="v2-detalhe__obs"><strong>Divergências:</strong> {{ r.divergencias }}</p>
+                }
+              </div>
+            }
+          </div>
+          @if (r.statusFinal) {
+            <p class="v2-detalhe__obs"><strong>Status final:</strong> {{ r.statusFinal }}</p>
+          }
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template #emptymessage>
+      <tr>
+        <td [attr.colspan]="5 + etapasTabela.length" class="v2-vazio">
+          Nenhum estabelecimento encontrado.
+          @if (faltamLinhas()) {
+            Se a planilha foi enviada antes desta visão, envie-a novamente para preencher a lista.
+          }
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</section>

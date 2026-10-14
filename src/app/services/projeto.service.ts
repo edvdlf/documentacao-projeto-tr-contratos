@@ -2,12 +2,14 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { recursosDoProjeto } from '../data/projeto.recursos';
 import {
   Atividade,
   Pagina,
   Painel,
   Projeto,
   Sprint,
+  Usuario,
   dataBr,
   rotuloNivel,
   rotuloStatus,
@@ -25,6 +27,7 @@ import {
   TomBadge,
 } from '../models/projeto.models';
 import { mensagemErro } from './admin-api.service';
+import { AuthService } from './auth.service';
 
 const STORAGE_KEY = 'vetorit.projeto';
 /** Ao abrir uma página logo depois de outra carga, reaproveita os dados. */
@@ -34,6 +37,7 @@ const INTERVALO_MINIMO_MS = 3000;
 @Injectable({ providedIn: 'root' })
 export class ProjetoService {
   private readonly http = inject(HttpClient);
+  private readonly auth = inject(AuthService);
   private readonly base = `${environment.apiUrl}/api/projetos`;
 
   readonly carregado = signal(false);
@@ -43,6 +47,8 @@ export class ProjetoService {
   private painelCarregadoEm = 0;
 
   readonly projetoAtual = computed(() => this.painel()?.projeto ?? null);
+
+  readonly recursos = computed(() => recursosDoProjeto(this.projetoAtual()));
 
   private readonly sprints = computed(() =>
     (this.painel()?.sprints ?? []).filter((s) => s.status !== 'CANCELADA'),
@@ -205,21 +211,40 @@ export class ProjetoService {
     })),
   );
 
-  /** Carrega a lista de projetos e o painel do projeto em acompanhamento. */
+  /** Carrega os projetos que o usuário logado pode ver e o painel do projeto em acompanhamento. */
   async carregar(): Promise<void> {
+    const usuario = this.auth.user();
+    if (!usuario) {
+      this.limpar();
+      return;
+    }
     try {
       const pagina = await firstValueFrom(
         this.http.get<Pagina<Projeto>>(this.base, {
           params: { size: 200, sort: 'nome', direction: 'ASC' },
         }),
       );
-      this.projetos.set(pagina.content);
-      const escolhido = escolherProjeto(pagina.content, lerProjetoSalvo());
+      let visiveis = pagina.content;
+      if (usuario.perfil !== 'ADMIN') {
+        const cadastro = await firstValueFrom(
+          this.http.get<Usuario>(`${environment.apiUrl}/api/usuarios/${usuario.id}`),
+        );
+        const vinculados = new Set(cadastro.projetos.map((p) => p.id));
+        visiveis = visiveis.filter((p) => vinculados.has(p.id));
+      }
+      if (this.auth.user()?.id !== usuario.id) return;
+
+      this.projetos.set(visiveis);
+      const escolhido = escolherProjeto(visiveis, lerProjetoSalvo());
       if (escolhido) {
         await this.buscarPainel(escolhido.id);
       } else {
         this.painel.set(null);
-        this.erro.set('Nenhum projeto cadastrado. Cadastre um projeto em Administração > Projetos.');
+        this.erro.set(
+          usuario.perfil === 'ADMIN'
+            ? 'Nenhum projeto cadastrado. Cadastre um projeto em Administração > Projetos.'
+            : 'Seu usuário não está vinculado a nenhum projeto. Procure um administrador.',
+        );
       }
     } catch (e) {
       this.erro.set(`Não foi possível carregar os dados da API: ${mensagemErro(e)}`);
@@ -234,7 +259,16 @@ export class ProjetoService {
     await this.carregar();
   }
 
+  /** Descarta os dados do usuário anterior (chamar ao sair). */
+  limpar(): void {
+    this.projetos.set([]);
+    this.painel.set(null);
+    this.painelCarregadoEm = 0;
+    this.erro.set(null);
+  }
+
   async selecionarProjeto(id: string): Promise<void> {
+    if (!this.projetos().some((p) => p.id === id)) return;
     salvarProjeto(id);
     try {
       await this.buscarPainel(id);
