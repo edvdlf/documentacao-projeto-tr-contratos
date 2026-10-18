@@ -34,17 +34,17 @@
       </tr>
     </thead>
     <tbody>
-      @for (item of filtrados(); track $index) {
-        <tr>
-          <td class="id">{{ item.id }}</td>
-          <td>{{ item.sprint }}</td>
-          <td class="nome">{{ item.funcionalidade }}</td>
-          <td class="desc">{{ item.descricao }}</td>
-          <td>{{ item.responsavel }}</td>
+      @for (linha of linhas(); track $index) {
+        <tr [attr.data-faixa]="linha.faixa">
+          <td class="id">{{ linha.item.id }}</td>
+          <td>{{ linha.item.sprint }}</td>
+          <td class="nome">{{ linha.item.funcionalidade }}</td>
+          <td class="desc">{{ linha.item.descricao }}</td>
+          <td>{{ linha.item.responsavel }}</td>
           <td>
-            <span class="badge" [attr.data-tom]="item.tom">{{ item.status }}</span>
+            <span class="badge" [attr.data-tom]="linha.item.tom">{{ linha.item.status }}</span>
           </td>
-          <td>{{ item.observacoes || '—' }}</td>
+          <td>{{ linha.item.observacoes || '—' }}</td>
         </tr>
       } @empty {
         <tr>

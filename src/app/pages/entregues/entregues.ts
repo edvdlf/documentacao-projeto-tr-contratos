@@ -21,6 +21,19 @@ export class EntreguesComponent {
     return itens.filter((i) => i.sprint === sprint);
   });
 
+  /** Alterna a faixa de cor sempre que a sprint muda em relação à linha anterior. */
+  readonly linhas = computed(() => {
+    let faixa = 0;
+    let sprintAnterior = '';
+    return this.filtrados().map((item) => {
+      if (sprintAnterior && item.sprint !== sprintAnterior) {
+        faixa = 1 - faixa;
+      }
+      sprintAnterior = item.sprint;
+      return { item, faixa };
+    });
+  });
+
   selecionarSprint(sprint: string): void {
     this.sprintFiltro.set(sprint);
   }

@@ -64,6 +64,14 @@ th {
   white-space: nowrap;
 }
 
+tbody tr[data-faixa='0'] {
+  background: var(--mercury);
+}
+
+tbody tr[data-faixa='1'] {
+  background: var(--orange-tint);
+}
+
 .id {
   font-weight: 700;
   color: var(--tundora);
