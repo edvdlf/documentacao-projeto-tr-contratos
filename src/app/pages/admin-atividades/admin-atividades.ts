@@ -1,4 +1,4 @@
-import { Component, inject, input, signal } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   Atividade,
@@ -64,6 +64,19 @@ export class AdminAtividadesComponent {
   filtros: { sprint: string; status: StatusAtividade | '' } = { sprint: '', status: '' };
   readonly listagem = signal<Listagem>({ page: 0, size: 50, sort: 'sprint', direction: 'ASC' });
   readonly pagina = signal<Pagina<Atividade> | null>(null);
+  /** Alterna a faixa de cor sempre que a sprint muda em relação à linha anterior. */
+  readonly linhas = computed(() => {
+    let faixa = 0;
+    let sprintAnterior = '';
+    return (this.pagina()?.content ?? []).map((item) => {
+      const sprint = item.sprint ?? '';
+      if (sprintAnterior && sprint !== sprintAnterior) {
+        faixa = 1 - faixa;
+      }
+      sprintAnterior = sprint;
+      return { item, faixa };
+    });
+  });
   readonly carregando = signal(false);
   readonly erro = signal<string | null>(null);
   readonly aviso = signal<string | null>(null);

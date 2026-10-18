@@ -185,19 +185,19 @@
       </tr>
     </thead>
     <tbody>
-      @for (a of pagina()?.content ?? []; track a.id) {
-        <tr>
-          <td class="adm-table__strong">{{ a.codigo }}</td>
-          <td>{{ a.sprint || '-' }}</td>
-          <td>{{ a.titulo }}</td>
-          <td>{{ a.responsavel || '-' }}</td>
+      @for (linha of linhas(); track linha.item.id) {
+        <tr [attr.data-faixa]="linha.faixa">
+          <td class="adm-table__strong">{{ linha.item.codigo }}</td>
+          <td>{{ linha.item.sprint || '-' }}</td>
+          <td>{{ linha.item.titulo }}</td>
+          <td>{{ linha.item.responsavel || '-' }}</td>
           <td>
             <select
               class="adm-badge"
-              [attr.data-tom]="tomStatus(a.status)"
-              [attr.aria-label]="'Status da atividade ' + a.codigo"
-              [ngModel]="a.status"
-              (ngModelChange)="alterarStatus(a, $event)"
+              [attr.data-tom]="tomStatus(linha.item.status)"
+              [attr.aria-label]="'Status da atividade ' + linha.item.codigo"
+              [ngModel]="linha.item.status"
+              (ngModelChange)="alterarStatus(linha.item, $event)"
             >
               @for (s of statusOpcoes; track s.valor) {
                 <option [value]="s.valor">{{ s.rotulo }}</option>
@@ -205,8 +205,14 @@
             </select>
           </td>
           <td class="adm-table__acoes">
-            <button type="button" class="adm-btn adm-btn--sm" (click)="editar(a)">Editar</button>
-            <button type="button" class="adm-btn adm-btn--sm adm-btn--danger" (click)="excluir(a)">
+            <button type="button" class="adm-btn adm-btn--sm" (click)="editar(linha.item)">
+              Editar
+            </button>
+            <button
+              type="button"
+              class="adm-btn adm-btn--sm adm-btn--danger"
+              (click)="excluir(linha.item)"
+            >
               Excluir
             </button>
           </td>
