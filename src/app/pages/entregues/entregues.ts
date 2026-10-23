@@ -21,6 +21,17 @@ export class EntreguesComponent {
     return itens.filter((i) => i.sprint === sprint);
   });
 
+  readonly totalTodas = computed(() => this.projeto.entregues().length);
+
+  readonly sprintsFiltro = computed(() => {
+    const totais = new Map<string, number>();
+    for (const item of this.projeto.entregues()) {
+      if (!item.sprint) continue;
+      totais.set(item.sprint, (totais.get(item.sprint) ?? 0) + 1);
+    }
+    return [...totais.entries()].map(([sprint, total]) => ({ sprint, total }));
+  });
+
   selecionarSprint(sprint: string): void {
     this.sprintFiltro.set(sprint);
   }

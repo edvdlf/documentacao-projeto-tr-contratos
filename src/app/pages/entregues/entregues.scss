@@ -15,6 +15,9 @@
 }
 
 .filters button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--charcoal);
@@ -29,6 +32,26 @@
 .filters button.is-active {
   background: var(--orange-primary);
   border-color: var(--orange-primary);
+  color: #fff;
+}
+
+.filters__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.35rem;
+  height: 1.2rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: var(--mercury);
+  color: var(--tundora);
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.filters button.is-active .filters__badge {
+  background: rgba(255, 255, 255, 0.22);
   color: #fff;
 }
 

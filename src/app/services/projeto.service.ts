@@ -71,7 +71,7 @@ export class ProjetoService {
 
   readonly entregues = computed(() =>
     this.atividades()
-      .filter((a) => a.status === 'CONCLUIDA')
+      .filter((a) => a.status === 'CONCLUIDA' || a.status === 'HOMOLOGADO')
       .map(itemAtividade),
   );
 
@@ -144,12 +144,14 @@ export class ProjetoService {
     const concluidas = this.sprints().filter((s) => s.status === 'CONCLUIDA');
     const planejadas = concluidas.reduce((acc, s) => acc + s.planejadas, 0);
     const entregues = concluidas.reduce((acc, s) => acc + s.executadas, 0);
+    const homologadas = this.atividades().filter((a) => a.status === 'HOMOLOGADO').length;
     return {
       sprintsConcluidas: concluidas.length,
       totalSprints: linhas.length,
       planejadas,
       entregues,
-      aderencia: planejadas ? Math.round((entregues / planejadas) * 100) : null,
+      homologadas,
+      aderencia: planejadas ? Math.round((homologadas / planejadas) * 100) : null,
       linhas,
     };
   });

@@ -67,10 +67,12 @@ export interface DesempenhoSprint {
 export interface ResumoSprints {
   sprintsConcluidas: number;
   totalSprints: number;
-  /** Planejadas e entregues somando só as sprints concluídas. */
+  /** Planejadas e desenvolvidas somando só as sprints concluídas. */
   planejadas: number;
   entregues: number;
-  /** Entregues ÷ planejadas das sprints concluídas, 0 a 100 (nulo sem planejadas). */
+  /** Atividades com status Homologado no projeto. */
+  homologadas: number;
+  /** Homologadas ÷ planejadas das sprints concluídas, 0 a 100 (nulo sem planejadas). */
   aderencia: number | null;
   linhas: DesempenhoSprint[];
 }

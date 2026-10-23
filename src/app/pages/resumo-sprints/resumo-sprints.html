@@ -32,14 +32,19 @@
     <span class="kpi__dica">nas sprints concluídas</span>
   </div>
   <div class="kpi">
-    <span class="kpi__rotulo">Itens entregues</span>
+    <span class="kpi__rotulo">Desenvolvidas</span>
     <strong class="kpi__valor">{{ r.entregues }}</strong>
     <span class="kpi__dica">nas sprints concluídas</span>
+  </div>
+  <div class="kpi">
+    <span class="kpi__rotulo">Homologadas</span>
+    <strong class="kpi__valor">{{ r.homologadas }}</strong>
+    <span class="kpi__dica">no projeto</span>
   </div>
   <div class="kpi kpi--destaque">
     <span class="kpi__rotulo">Aderência</span>
     <strong class="kpi__valor">{{ r.aderencia === null ? '—' : r.aderencia + '%' }}</strong>
-    <span class="kpi__dica">entregues ÷ planejados</span>
+    <span class="kpi__dica">homologadas ÷ planejados</span>
   </div>
 </section>
 

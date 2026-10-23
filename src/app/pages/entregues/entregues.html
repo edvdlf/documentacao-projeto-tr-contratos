@@ -12,10 +12,12 @@
 <nav class="filters" aria-label="Filtro por sprint">
   <button type="button" [class.is-active]="sprintFiltro() === 'todas'" (click)="selecionarSprint('todas')">
     Todas
+    <span class="filters__badge">{{ totalTodas() }}</span>
   </button>
-  @for (sprint of projeto.sprintsEntregues(); track sprint) {
-    <button type="button" [class.is-active]="sprintFiltro() === sprint" (click)="selecionarSprint(sprint)">
-      {{ sprint }}
+  @for (s of sprintsFiltro(); track s.sprint) {
+    <button type="button" [class.is-active]="sprintFiltro() === s.sprint" (click)="selecionarSprint(s.sprint)">
+      {{ s.sprint }}
+      <span class="filters__badge">{{ s.total }}</span>
     </button>
   }
 </nav>
