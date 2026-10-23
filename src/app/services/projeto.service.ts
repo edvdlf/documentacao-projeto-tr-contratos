@@ -307,6 +307,8 @@ function tomSprint(status: Sprint['status']): TomBadge {
       return 'concluido';
     case 'EM_ANDAMENTO':
       return 'aguardando';
+    case 'PAUSADO':
+      return 'pausado';
     case 'CANCELADA':
       return 'cancelado';
     default:
@@ -338,6 +340,8 @@ function tom(status: string): TomBadge {
       return 'concluido';
     case 'AGUARDANDO_APROVACAO':
       return 'aguardando';
+    case 'PAUSADO':
+      return 'pausado';
     case 'EM_ATRASO':
     case 'BLOQUEADA':
       return 'atraso';

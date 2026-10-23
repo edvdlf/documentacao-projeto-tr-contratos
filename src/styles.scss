@@ -86,6 +86,11 @@ img {
   border: 1px solid #f0c400;
 }
 
+.badge[data-tom='pausado'] {
+  background: color-mix(in srgb, var(--dove) 16%, white);
+  color: var(--dove);
+}
+
 .badge[data-nivel='ALTO'] {
   background: color-mix(in srgb, var(--danger) 14%, white);
   color: var(--danger);
@@ -398,6 +403,11 @@ select.adm-badge {
 .adm-badge[data-tom='alerta'] {
   background: color-mix(in srgb, var(--warning) 20%, white);
   color: #8a5a00;
+}
+
+.adm-badge[data-tom='pausado'] {
+  background: color-mix(in srgb, var(--dove) 16%, white);
+  color: var(--dove);
 }
 
 .adm-badge[data-tom='cancelado'] {

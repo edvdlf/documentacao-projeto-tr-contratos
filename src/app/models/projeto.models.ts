@@ -1,7 +1,7 @@
 /** Dados prontos para exibição nas páginas do portal, montados a partir do painel da API. */
 
 /** Tom visual do `.badge` (atributo `data-tom`). */
-export type TomBadge = 'concluido' | 'pendente' | 'aguardando' | 'atraso' | 'cancelado';
+export type TomBadge = 'concluido' | 'pendente' | 'aguardando' | 'pausado' | 'atraso' | 'cancelado';
 
 export interface ItemAtividade {
   /** Texto do campo sprint da atividade. */
