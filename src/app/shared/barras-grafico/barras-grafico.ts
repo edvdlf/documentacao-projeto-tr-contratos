@@ -41,6 +41,8 @@ type GraficoBarras = Chart<'bar', number[], string>;
 export class BarrasGraficoComponent {
   readonly barras = input.required<Barra[]>();
   readonly titulo = input('');
+  /** Texto do tooltip depois do número. Padrão do painel ROT. */
+  readonly unidade = input('retificação(ões)');
 
   private readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
   private grafico: GraficoBarras | null = null;
@@ -51,13 +53,18 @@ export class BarrasGraficoComponent {
       const rotulos = barras.map((b) => b.rotulo);
       const valores = barras.map((b) => b.valor);
       const cores = barras.map((b) => b.cor ?? COR_BARRA);
+      const unidade = this.unidade();
       if (this.grafico) {
         this.grafico.data.labels = rotulos;
         this.grafico.data.datasets[0].data = valores;
         this.grafico.data.datasets[0].backgroundColor = cores;
+        const tooltip = this.grafico.options.plugins?.tooltip;
+        if (tooltip) {
+          tooltip.callbacks = { label: (ctx) => ` ${ctx.parsed.x} ${unidade}` };
+        }
         this.grafico.update();
       } else {
-        this.grafico = criarGrafico(this.canvas().nativeElement, rotulos, valores, cores);
+        this.grafico = criarGrafico(this.canvas().nativeElement, rotulos, valores, cores, unidade);
       }
     });
 
@@ -75,6 +82,7 @@ function criarGrafico(
   rotulos: string[],
   valores: number[],
   cores: string[],
+  unidade: string,
 ): GraficoBarras {
   const estilo = getComputedStyle(document.documentElement);
   const texto = estilo.getPropertyValue('--dove').trim() || '#666666';
@@ -113,7 +121,7 @@ function criarGrafico(
       plugins: {
         legend: { display: false },
         tooltip: {
-          callbacks: { label: (ctx) => ` ${ctx.parsed.x} retificação(ões)` },
+          callbacks: { label: (ctx) => ` ${ctx.parsed.x} ${unidade}` },
         },
       },
     },

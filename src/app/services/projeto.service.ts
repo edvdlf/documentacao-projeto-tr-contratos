@@ -154,17 +154,22 @@ export class ProjetoService {
     };
   });
 
-  /** Totais da evolução: desenvolvidas × a desenvolver. */
+  /** Totais da evolução: desenvolvidas, homologadas e a desenvolver. */
   readonly resumoTarefas = computed(() => {
     const evo = this.evolucao();
     const planejadoTotal = evo.reduce((acc, s) => acc + (s.planejadas || 0), 0);
-    const desenvolvidas = evo.reduce((acc, s) => acc + (s.entregues ?? 0), 0);
+    const desenvolvidas = this.atividades().filter((a) => a.status === 'CONCLUIDA').length;
+    const homologadas = this.atividades().filter((a) => a.status === 'HOMOLOGADO').length;
     return {
       planejadoTotal,
       desenvolvidas,
-      aDesenvolver: Math.max(0, planejadoTotal - desenvolvidas),
+      homologadas,
+      aDesenvolver: Math.max(0, planejadoTotal - desenvolvidas - homologadas),
       percentualDesenvolvidas: planejadoTotal
         ? Math.round((desenvolvidas / planejadoTotal) * 100)
+        : 0,
+      percentualHomologadas: planejadoTotal
+        ? Math.round((homologadas / planejadoTotal) * 100)
         : 0,
     };
   });
@@ -304,6 +309,7 @@ function semEntregas(s: Sprint): boolean {
 function tomSprint(status: Sprint['status']): TomBadge {
   switch (status) {
     case 'CONCLUIDA':
+    case 'HOMOLOGADO':
       return 'concluido';
     case 'EM_ANDAMENTO':
       return 'aguardando';
@@ -337,6 +343,7 @@ function tom(status: string): TomBadge {
     case 'RESOLVIDO':
     case 'MITIGADO':
     case 'APROVADO':
+    case 'HOMOLOGADO':
       return 'concluido';
     case 'AGUARDANDO_APROVACAO':
       return 'aguardando';

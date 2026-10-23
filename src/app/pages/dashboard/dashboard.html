@@ -17,37 +17,34 @@
 
 <section class="panel chart-panel">
   <div class="panel__head">
-    <h3>Desenvolvidas × a desenvolver</h3>
+    <h3>Homologadas × desenvolvidas × a desenvolver</h3>
   </div>
   <p class="chart-panel__hint">
-    Atividades das sprints cadastradas (planejadas × concluídas).
+    Atividades das sprints cadastradas: concluídas, homologadas e o que ainda falta.
   </p>
 
   <div class="chart">
-    <div class="chart__visual" aria-hidden="true">
-      <svg viewBox="0 0 100 100" class="chart__donut">
-        <circle class="chart__track" cx="50" cy="50" r="42" />
-        <circle
-          class="chart__slice chart__slice--done"
-          cx="50"
-          cy="50"
-          r="42"
-          [attr.stroke-dasharray]="dashDesenvolvidas()"
-          stroke-dashoffset="0"
-        />
-      </svg>
-      <div class="chart__center">
-        <strong>{{ t.percentualDesenvolvidas }}%</strong>
-        <span>desenvolvidas</span>
-      </div>
+    <div class="chart__visual">
+      <app-barras-grafico
+        [barras]="barrasResumo()"
+        titulo="Homologadas, desenvolvidas e a desenvolver"
+        unidade="tarefa(s)"
+      />
     </div>
 
     <ul class="chart__legend">
       <li>
+        <span class="swatch swatch--homolog"></span>
+        <div>
+          <strong>Homologadas</strong>
+          <p>{{ t.homologadas }} tarefas ({{ t.percentualHomologadas }}%)</p>
+        </div>
+      </li>
+      <li>
         <span class="swatch swatch--done"></span>
         <div>
           <strong>Desenvolvidas</strong>
-          <p>{{ t.desenvolvidas }} tarefas</p>
+          <p>{{ t.desenvolvidas }} tarefas ({{ t.percentualDesenvolvidas }}%)</p>
         </div>
       </li>
       <li>
@@ -64,18 +61,6 @@
         </div>
       </li>
     </ul>
-  </div>
-
-  <div
-    class="chart__bar"
-    role="img"
-    [attr.aria-label]="'Desenvolvidas ' + t.desenvolvidas + ' de ' + t.planejadoTotal"
-  >
-    <div
-      class="chart__bar-done"
-      [style.width.%]="t.percentualDesenvolvidas"
-      [title]="t.desenvolvidas + ' desenvolvidas'"
-    ></div>
   </div>
 </section>
 

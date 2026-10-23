@@ -1,11 +1,18 @@
 /** Tipos da API do backend (Spring Boot), usados pela área administrativa. */
 
-export type StatusProjeto = 'PLANEJADO' | 'EM_ANDAMENTO' | 'PAUSADO' | 'CONCLUIDO' | 'CANCELADO';
+export type StatusProjeto =
+  | 'PLANEJADO'
+  | 'EM_ANDAMENTO'
+  | 'PAUSADO'
+  | 'HOMOLOGADO'
+  | 'CONCLUIDO'
+  | 'CANCELADO';
 
 export type StatusAtividade =
   | 'PLANEJADA'
   | 'EM_ANDAMENTO'
   | 'PAUSADO'
+  | 'HOMOLOGADO'
   | 'CONCLUIDA'
   | 'BLOQUEADA'
   | 'CANCELADA';
@@ -14,6 +21,7 @@ export const STATUS_PROJETO: { valor: StatusProjeto; rotulo: string }[] = [
   { valor: 'PLANEJADO', rotulo: 'Planejado' },
   { valor: 'EM_ANDAMENTO', rotulo: 'Em andamento' },
   { valor: 'PAUSADO', rotulo: 'Em Pausa' },
+  { valor: 'HOMOLOGADO', rotulo: 'Homologado' },
   { valor: 'CONCLUIDO', rotulo: 'Concluído' },
   { valor: 'CANCELADO', rotulo: 'Cancelado' },
 ];
@@ -22,17 +30,25 @@ export const STATUS_ATIVIDADE: { valor: StatusAtividade; rotulo: string }[] = [
   { valor: 'PLANEJADA', rotulo: 'Planejada' },
   { valor: 'EM_ANDAMENTO', rotulo: 'Em andamento' },
   { valor: 'PAUSADO', rotulo: 'Em Pausa' },
+  { valor: 'HOMOLOGADO', rotulo: 'Homologado' },
   { valor: 'CONCLUIDA', rotulo: 'Concluída' },
   { valor: 'BLOQUEADA', rotulo: 'Bloqueada' },
   { valor: 'CANCELADA', rotulo: 'Cancelada' },
 ];
 
-export type StatusSprint = 'PLANEJADA' | 'EM_ANDAMENTO' | 'PAUSADO' | 'CONCLUIDA' | 'CANCELADA';
+export type StatusSprint =
+  | 'PLANEJADA'
+  | 'EM_ANDAMENTO'
+  | 'PAUSADO'
+  | 'HOMOLOGADO'
+  | 'CONCLUIDA'
+  | 'CANCELADA';
 
 export type StatusFluxo =
   | 'NAO_INICIADO'
   | 'EM_ANDAMENTO'
   | 'PAUSADO'
+  | 'HOMOLOGADO'
   | 'AGUARDANDO_APROVACAO'
   | 'APROVADO'
   | 'INATIVO';
@@ -41,6 +57,7 @@ export const STATUS_SPRINT: { valor: StatusSprint; rotulo: string }[] = [
   { valor: 'PLANEJADA', rotulo: 'Planejada' },
   { valor: 'EM_ANDAMENTO', rotulo: 'Em andamento' },
   { valor: 'PAUSADO', rotulo: 'Em Pausa' },
+  { valor: 'HOMOLOGADO', rotulo: 'Homologado' },
   { valor: 'CONCLUIDA', rotulo: 'Concluída' },
   { valor: 'CANCELADA', rotulo: 'Cancelada' },
 ];
@@ -49,6 +66,7 @@ export const STATUS_FLUXO: { valor: StatusFluxo; rotulo: string }[] = [
   { valor: 'NAO_INICIADO', rotulo: 'Não iniciado' },
   { valor: 'EM_ANDAMENTO', rotulo: 'Em andamento' },
   { valor: 'PAUSADO', rotulo: 'Em Pausa' },
+  { valor: 'HOMOLOGADO', rotulo: 'Homologado' },
   { valor: 'AGUARDANDO_APROVACAO', rotulo: 'Aguardando aprovação' },
   { valor: 'APROVADO', rotulo: 'Aprovado' },
   { valor: 'INATIVO', rotulo: 'Inativo' },
@@ -58,11 +76,12 @@ export type StatusPendencia =
   | 'ABERTA'
   | 'EM_ANALISE'
   | 'PAUSADO'
+  | 'HOMOLOGADO'
   | 'EM_ATRASO'
   | 'RESOLVIDA'
   | 'CANCELADA';
 
-export type StatusRisco = 'ABERTO' | 'EM_TRATAMENTO' | 'PAUSADO' | 'MITIGADO' | 'RESOLVIDO';
+export type StatusRisco = 'ABERTO' | 'EM_TRATAMENTO' | 'PAUSADO' | 'HOMOLOGADO' | 'MITIGADO' | 'RESOLVIDO';
 
 export type Nivel = 'BAIXO' | 'MEDIO' | 'ALTO';
 
@@ -70,6 +89,7 @@ export const STATUS_PENDENCIA: { valor: StatusPendencia; rotulo: string }[] = [
   { valor: 'ABERTA', rotulo: 'Aberta' },
   { valor: 'EM_ANALISE', rotulo: 'Em análise' },
   { valor: 'PAUSADO', rotulo: 'Em Pausa' },
+  { valor: 'HOMOLOGADO', rotulo: 'Homologado' },
   { valor: 'EM_ATRASO', rotulo: 'Em atraso' },
   { valor: 'RESOLVIDA', rotulo: 'Resolvida' },
   { valor: 'CANCELADA', rotulo: 'Cancelada' },
@@ -79,6 +99,7 @@ export const STATUS_RISCO: { valor: StatusRisco; rotulo: string }[] = [
   { valor: 'ABERTO', rotulo: 'Aberto' },
   { valor: 'EM_TRATAMENTO', rotulo: 'Em tratamento' },
   { valor: 'PAUSADO', rotulo: 'Em Pausa' },
+  { valor: 'HOMOLOGADO', rotulo: 'Homologado' },
   { valor: 'MITIGADO', rotulo: 'Mitigado' },
   { valor: 'RESOLVIDO', rotulo: 'Resolvido' },
 ];
@@ -133,6 +154,7 @@ export function tomStatus(status: Status): string {
     case 'CONCLUIDO':
     case 'CONCLUIDA':
     case 'APROVADO':
+    case 'HOMOLOGADO':
     case 'RESOLVIDA':
     case 'RESOLVIDO':
     case 'MITIGADO':
