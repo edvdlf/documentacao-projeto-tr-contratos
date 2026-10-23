@@ -15,9 +15,6 @@
 }
 
 .filters button {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--charcoal);
@@ -32,25 +29,6 @@
 .filters button.is-active {
   background: var(--orange-primary);
   border-color: var(--orange-primary);
-  color: #fff;
-}
-
-.filters__total {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 1.35rem;
-  padding: 0.05rem 0.4rem;
-  border-radius: 999px;
-  background: var(--mercury);
-  color: var(--tundora);
-  font-size: 0.72rem;
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-.filters button.is-active .filters__total {
-  background: rgba(255, 255, 255, 0.28);
   color: #fff;
 }
 
@@ -84,14 +62,6 @@ th {
   font-size: 0.75rem;
   text-transform: uppercase;
   white-space: nowrap;
-}
-
-tbody tr[data-faixa='0'] {
-  background: var(--mercury);
-}
-
-tbody tr[data-faixa='1'] {
-  background: var(--orange-tint);
 }
 
 .id {
