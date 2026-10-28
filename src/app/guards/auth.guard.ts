@@ -6,7 +6,7 @@ export const authGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
 
-  if (auth.isAuthenticated()) {
+  if (auth.garantirSessao()) {
     return true;
   }
 
@@ -17,7 +17,7 @@ export const guestGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
 
-  if (!auth.isAuthenticated()) {
+  if (!auth.garantirSessao()) {
     return true;
   }
 
@@ -29,7 +29,7 @@ export const adminGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
 
-  if (!auth.isAuthenticated()) {
+  if (!auth.garantirSessao()) {
     return router.createUrlTree(['/login']);
   }
 
