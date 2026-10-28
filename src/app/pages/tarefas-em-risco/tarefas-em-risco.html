@@ -1,0 +1,77 @@
+<section class="page-head">
+  <h2>Tarefas que podem atrasar</h2>
+  <p>
+    Situações em que o cronograma depende de ação de
+    {{ projeto.projetoAtual()?.cliente || 'o cliente' }}, e não do desenvolvimento.
+    @if (ativos().length === 1) {
+      Há 1 bloqueio ativo.
+    } @else {
+      Há {{ ativos().length }} bloqueios ativos.
+    }
+  </p>
+</section>
+
+@if (ativos().length) {
+  <div class="impacto-grid">
+    @for (item of ativos(); track item.id) {
+      <article class="impacto" [attr.data-tipo]="item.tipoValor">
+        <header class="impacto__head">
+          <span class="impacto__codigo">{{ item.id }}</span>
+          <span class="badge" [attr.data-tipo]="item.tipoValor">{{ item.tipo }}</span>
+          @if (item.impacto) {
+            <span class="badge" [attr.data-nivel]="item.nivelImpacto">{{ item.impacto }}</span>
+          }
+        </header>
+        <h3>{{ item.titulo }}</h3>
+        @if (item.descricao) {
+          <p class="impacto__texto">{{ item.descricao }}</p>
+        }
+        @if (item.tarefasAfetadas) {
+          <div class="impacto__bloco">
+            <h4>Tarefas que podem atrasar</h4>
+            <p>{{ item.tarefasAfetadas }}</p>
+          </div>
+        }
+        @if (item.acaoCliente) {
+          <div class="impacto__bloco impacto__bloco--acao">
+            <h4>Ação necessária do cliente</h4>
+            <p>{{ item.acaoCliente }}</p>
+          </div>
+        }
+        @if (item.pendenciaId) {
+          <p class="impacto__pendencia">
+            Relacionada à
+            <a routerLink="/pendencias">pendência {{ item.pendenciaId }}</a>
+            @if (item.pendenciaTema) {
+              · {{ item.pendenciaTema }}
+            }
+          </p>
+        }
+      </article>
+    }
+  </div>
+} @else {
+  <div class="panel empty-panel">
+    <p class="empty">Nenhuma tarefa em risco de atraso por dependência do cliente.</p>
+  </div>
+}
+
+@if (resolvidos().length) {
+  <section class="resolvidos">
+    <h3>Já desbloqueados</h3>
+    <div class="impacto-grid impacto-grid--resolvido">
+      @for (item of resolvidos(); track item.id) {
+        <article class="impacto impacto--resolvido">
+          <header class="impacto__head">
+            <span class="impacto__codigo">{{ item.id }}</span>
+            <span class="badge" [attr.data-tom]="item.tom">{{ item.status }}</span>
+          </header>
+          <h3>{{ item.titulo }}</h3>
+          @if (item.descricao) {
+            <p class="impacto__texto">{{ item.descricao }}</p>
+          }
+        </article>
+      }
+    </div>
+  </section>
+}

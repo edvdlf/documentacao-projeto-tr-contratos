@@ -105,6 +105,23 @@ export interface RiscoPainel {
   tom: TomBadge;
 }
 
+export interface ImpactoPainel {
+  id: string;
+  titulo: string;
+  descricao: string;
+  tipo: string;
+  tipoValor: string;
+  tarefasAfetadas: string;
+  acaoCliente: string;
+  pendenciaId: string;
+  pendenciaTema: string;
+  impacto: string;
+  nivelImpacto: string;
+  status: string;
+  tom: TomBadge;
+  ativo: boolean;
+}
+
 export interface FluxoBizagi {
   seq: number;
   id: string;

@@ -40,6 +40,13 @@ export const routes: Routes = [
           import('./pages/pendencias/pendencias').then((m) => m.PendenciasComponent),
       },
       {
+        path: 'tarefas-em-risco',
+        loadComponent: () =>
+          import('./pages/tarefas-em-risco/tarefas-em-risco').then(
+            (m) => m.TarefasEmRiscoComponent,
+          ),
+      },
+      {
         path: 'riscos',
         loadComponent: () => import('./pages/riscos/riscos').then((m) => m.RiscosComponent),
       },
@@ -99,6 +106,13 @@ export const routes: Routes = [
             loadComponent: () =>
               import('./pages/admin-pendencias/admin-pendencias').then(
                 (m) => m.AdminPendenciasComponent,
+              ),
+          },
+          {
+            path: 'tarefas-em-risco',
+            loadComponent: () =>
+              import('./pages/admin-impactos/admin-impactos').then(
+                (m) => m.AdminImpactosComponent,
               ),
           },
           {

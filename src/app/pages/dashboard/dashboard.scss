@@ -339,7 +339,7 @@ th {
 
 .nav-cards {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
   margin-bottom: 0.25rem;
 }
@@ -362,6 +362,10 @@ th {
 
 .nav-card--pendencias {
   border-top-color: var(--warning);
+}
+
+.nav-card--impacto {
+  border-top-color: var(--orange-primary);
 }
 
 .nav-card--riscos {
@@ -424,6 +428,10 @@ th {
 @media (max-width: 1100px) {
   .evolucao {
     grid-template-columns: 1fr;
+  }
+
+  .nav-cards {
+    grid-template-columns: 1fr 1fr;
   }
 }
 

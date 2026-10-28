@@ -83,6 +83,10 @@ export type StatusPendencia =
 
 export type StatusRisco = 'ABERTO' | 'EM_TRATAMENTO' | 'PAUSADO' | 'HOMOLOGADO' | 'MITIGADO' | 'RESOLVIDO';
 
+export type TipoImpacto = 'BLOQUEIO_INICIO' | 'BLOQUEIO_FINALIZACAO' | 'BLOQUEIO_HOMOLOGACAO';
+
+export type StatusImpacto = 'ATIVO' | 'RESOLVIDO' | 'CANCELADO';
+
 export type Nivel = 'BAIXO' | 'MEDIO' | 'ALTO';
 
 export const STATUS_PENDENCIA: { valor: StatusPendencia; rotulo: string }[] = [
@@ -103,6 +107,22 @@ export const STATUS_RISCO: { valor: StatusRisco; rotulo: string }[] = [
   { valor: 'MITIGADO', rotulo: 'Mitigado' },
   { valor: 'RESOLVIDO', rotulo: 'Resolvido' },
 ];
+
+export const STATUS_IMPACTO: { valor: StatusImpacto; rotulo: string }[] = [
+  { valor: 'ATIVO', rotulo: 'Ativo' },
+  { valor: 'RESOLVIDO', rotulo: 'Resolvido' },
+  { valor: 'CANCELADO', rotulo: 'Cancelado' },
+];
+
+export const TIPOS_IMPACTO: { valor: TipoImpacto; rotulo: string }[] = [
+  { valor: 'BLOQUEIO_INICIO', rotulo: 'Não pode iniciar' },
+  { valor: 'BLOQUEIO_FINALIZACAO', rotulo: 'Não pode finalizar' },
+  { valor: 'BLOQUEIO_HOMOLOGACAO', rotulo: 'Não pode homologar' },
+];
+
+export function rotuloTipoImpacto(tipo: TipoImpacto | null | undefined): string {
+  return TIPOS_IMPACTO.find((t) => t.valor === tipo)?.rotulo ?? tipo ?? '';
+}
 
 export const NIVEIS: { valor: Nivel; rotulo: string }[] = [
   { valor: 'ALTO', rotulo: 'Alto' },
@@ -127,7 +147,8 @@ type Status =
   | StatusSprint
   | StatusFluxo
   | StatusPendencia
-  | StatusRisco;
+  | StatusRisco
+  | StatusImpacto;
 
 const ROTULOS: Record<string, string> = Object.fromEntries(
   [
@@ -137,6 +158,7 @@ const ROTULOS: Record<string, string> = Object.fromEntries(
     ...STATUS_FLUXO,
     ...STATUS_PENDENCIA,
     ...STATUS_RISCO,
+    ...STATUS_IMPACTO,
   ].map((s) => [s.valor, s.rotulo]),
 );
 
@@ -159,6 +181,8 @@ export function tomStatus(status: Status): string {
     case 'RESOLVIDO':
     case 'MITIGADO':
       return 'concluido';
+    case 'ATIVO':
+      return 'alerta';
     case 'PAUSADO':
       return 'pausado';
     case 'BLOQUEADA':
@@ -341,6 +365,36 @@ export interface Risco {
   atualizadoEm: string;
 }
 
+export interface ImpactoCronograma {
+  id: string;
+  projetoId: string;
+  codigo: string;
+  titulo: string;
+  descricao: string | null;
+  tipo: TipoImpacto;
+  tarefasAfetadas: string | null;
+  acaoCliente: string | null;
+  pendenciaId: string | null;
+  pendenciaCodigo: string | null;
+  pendenciaTema: string | null;
+  impacto: Nivel | null;
+  status: StatusImpacto;
+  criadoEm: string;
+  atualizadoEm: string;
+}
+
+export interface ImpactoRequest {
+  codigo: string;
+  titulo: string;
+  descricao: string | null;
+  tipo: TipoImpacto;
+  tarefasAfetadas: string | null;
+  acaoCliente: string | null;
+  pendenciaId: string | null;
+  impacto: Nivel | null;
+  status: StatusImpacto;
+}
+
 export interface RiscoRequest {
   codigo: string;
   titulo: string;
@@ -360,6 +414,8 @@ export interface Painel {
   atividades: Atividade[];
   pendencias: Pendencia[];
   riscos: Risco[];
+  /** Sem os impactos cancelados. */
+  impactos: ImpactoCronograma[];
   /** Sem os fluxos inativos. */
   fluxos: Fluxo[];
 }

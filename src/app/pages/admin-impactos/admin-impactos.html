@@ -1,0 +1,256 @@
+<section class="adm-head">
+  <div>
+    <h2>Tarefas em risco</h2>
+    <p>
+      Cadastre e edite os textos que explicam quais tarefas podem atrasar por dependência de
+      pendência do cliente. É o conteúdo da página Tarefas em risco do portal.
+    </p>
+  </div>
+  <div class="adm-actions">
+    <button
+      type="button"
+      class="adm-btn adm-btn--primary"
+      [disabled]="!projetoAtual()"
+      (click)="nova()"
+    >
+      Novo impacto
+    </button>
+  </div>
+</section>
+
+<div class="adm-filters">
+  <app-seletor-projeto [projetoId]="projeto()" (projetoAlterado)="aoSelecionarProjeto($event)" />
+</div>
+
+@if (aviso(); as msg) {
+  <div class="adm-alert adm-alert--ok" role="status">{{ msg }}</div>
+}
+@if (erro(); as msg) {
+  <div class="adm-alert adm-alert--erro" role="alert">{{ msg }}</div>
+}
+
+@if (emEdicao(); as alvo) {
+  <section class="adm-panel">
+    <h3>{{ alvo === 'nova' ? 'Novo impacto' : 'Editar impacto ' + alvo.codigo }}</h3>
+    @if (erroForm(); as msg) {
+      <div class="adm-alert adm-alert--erro" role="alert">{{ msg }}</div>
+    }
+    <form class="adm-form" (ngSubmit)="salvar()">
+      <label class="adm-field">
+        ID*
+        <input name="codigo" [(ngModel)]="form.codigo" required maxlength="50" placeholder="Ex.: TC_04" />
+        @if (errosForm()['codigo']; as e) {
+          <span class="adm-field__erro">{{ e }}</span>
+        }
+      </label>
+      <label class="adm-field">
+        Título*
+        <input name="titulo" [(ngModel)]="form.titulo" required maxlength="200" />
+        @if (errosForm()['titulo']; as e) {
+          <span class="adm-field__erro">{{ e }}</span>
+        }
+      </label>
+      <label class="adm-field">
+        Tipo de bloqueio*
+        <select name="tipo" [(ngModel)]="form.tipo" required>
+          @for (t of tipos; track t.valor) {
+            <option [value]="t.valor">{{ t.rotulo }}</option>
+          }
+        </select>
+      </label>
+      <label class="adm-field">
+        Status
+        <select name="status" [(ngModel)]="form.status">
+          @for (s of statusOpcoes; track s.valor) {
+            <option [value]="s.valor">{{ s.rotulo }}</option>
+          }
+        </select>
+      </label>
+      <label class="adm-field">
+        Impacto
+        <select name="impacto" [(ngModel)]="form.impacto">
+          <option value="">Não informado</option>
+          @for (n of niveis; track n.valor) {
+            <option [value]="n.valor">{{ n.rotulo }}</option>
+          }
+        </select>
+      </label>
+      <label class="adm-field">
+        Pendência relacionada
+        <select name="pendenciaId" [(ngModel)]="form.pendenciaId">
+          <option value="">Nenhuma</option>
+          @for (p of pendencias(); track p.id) {
+            <option [value]="p.id">{{ rotuloPendenciaItem(p) }}</option>
+          }
+        </select>
+      </label>
+      <label class="adm-field adm-field--wide">
+        Texto exibido no portal
+        <textarea
+          name="descricao"
+          [(ngModel)]="form.descricao"
+          rows="4"
+          placeholder="Explique por que as tarefas podem atrasar e o que depende do cliente."
+        ></textarea>
+      </label>
+      <label class="adm-field adm-field--wide">
+        Tarefas que podem atrasar
+        <textarea
+          name="tarefasAfetadas"
+          [(ngModel)]="form.tarefasAfetadas"
+          rows="3"
+          placeholder="Liste as funcionalidades ou tarefas afetadas."
+        ></textarea>
+      </label>
+      <label class="adm-field adm-field--wide">
+        Ação necessária do cliente
+        <textarea
+          name="acaoCliente"
+          [(ngModel)]="form.acaoCliente"
+          rows="3"
+          placeholder="O que o cliente precisa fazer para destravar o cronograma."
+        ></textarea>
+      </label>
+      <div class="adm-form__foot">
+        <button type="button" class="adm-btn" (click)="cancelar()">Cancelar</button>
+        <button type="submit" class="adm-btn adm-btn--primary" [disabled]="salvando()">
+          {{ salvando() ? 'Salvando…' : 'Salvar' }}
+        </button>
+      </div>
+    </form>
+  </section>
+}
+
+<form class="adm-filters" (ngSubmit)="filtrar()">
+  <label class="adm-field">
+    Buscar
+    <input name="q" [(ngModel)]="filtros.q" placeholder="ID, título, texto ou tarefas" />
+  </label>
+  <label class="adm-field">
+    Status
+    <select
+      name="filtroStatus"
+      [ngModel]="filtros.status"
+      (ngModelChange)="filtros.status = $event; filtrar()"
+    >
+      <option value="">Todos</option>
+      @for (s of statusOpcoes; track s.valor) {
+        <option [value]="s.valor">{{ s.rotulo }}</option>
+      }
+    </select>
+  </label>
+  <label class="adm-field">
+    Ordenar por
+    <select
+      name="sort"
+      [ngModel]="listagem().sort"
+      (ngModelChange)="alterarListagem({ sort: $event })"
+    >
+      @for (o of ordenacoes; track o.valor) {
+        <option [value]="o.valor">{{ o.rotulo }}</option>
+      }
+    </select>
+  </label>
+  <label class="adm-field">
+    Direção
+    <select
+      name="direction"
+      [ngModel]="listagem().direction"
+      (ngModelChange)="alterarListagem({ direction: $event })"
+    >
+      <option value="ASC">Crescente</option>
+      <option value="DESC">Decrescente</option>
+    </select>
+  </label>
+  <button type="submit" class="adm-btn" [disabled]="!projetoAtual()">Filtrar</button>
+</form>
+
+<div class="adm-table">
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Título</th>
+        <th>Tipo</th>
+        <th>Pendência</th>
+        <th>Impacto</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of pagina()?.content ?? []; track item.id) {
+        <tr>
+          <td class="adm-table__strong">{{ item.codigo }}</td>
+          <td>
+            {{ item.titulo }}
+            @if (item.descricao) {
+              <br /><small class="adm-dica">{{ item.descricao }}</small>
+            }
+          </td>
+          <td>{{ rotuloTipo(item.tipo) }}</td>
+          <td>{{ item.pendenciaCodigo || '-' }}</td>
+          <td>{{ rotuloNivel(item.impacto) || '-' }}</td>
+          <td>
+            <select
+              class="adm-badge"
+              [attr.data-tom]="tomStatus(item.status)"
+              [attr.aria-label]="'Status do impacto ' + item.codigo"
+              [ngModel]="item.status"
+              (ngModelChange)="alterarStatus(item, $event)"
+            >
+              @for (o of statusOpcoes; track o.valor) {
+                <option [value]="o.valor">{{ o.rotulo }}</option>
+              }
+            </select>
+          </td>
+          <td class="adm-table__acoes">
+            <button type="button" class="adm-btn adm-btn--sm" (click)="editar(item)">Editar</button>
+            <button type="button" class="adm-btn adm-btn--sm adm-btn--danger" (click)="excluir(item)">
+              Excluir
+            </button>
+          </td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="7" class="adm-table__vazio">
+            @if (!projetoAtual()) {
+              Selecione um projeto.
+            } @else {
+              {{ carregando() ? 'Carregando…' : 'Nenhum impacto encontrado.' }}
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  @if (pagina(); as p) {
+    @if (p.page.totalElements > 0) {
+      <div class="adm-pager">
+        <span
+          >Página {{ p.page.number + 1 }} de {{ p.page.totalPages }} ·
+          {{ p.page.totalElements }} impacto(s)</span
+        >
+        <div class="adm-actions">
+          <button
+            type="button"
+            class="adm-btn adm-btn--sm"
+            [disabled]="p.page.number === 0"
+            (click)="irParaPagina(p.page.number - 1)"
+          >
+            Anterior
+          </button>
+          <button
+            type="button"
+            class="adm-btn adm-btn--sm"
+            [disabled]="p.page.number + 1 >= p.page.totalPages"
+            (click)="irParaPagina(p.page.number + 1)"
+          >
+            Próxima
+          </button>
+        </div>
+      </div>
+    }
+  }
+</div>

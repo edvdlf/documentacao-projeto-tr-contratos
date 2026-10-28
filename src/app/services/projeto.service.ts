@@ -13,12 +13,14 @@ import {
   dataBr,
   rotuloNivel,
   rotuloStatus,
+  rotuloTipoImpacto,
 } from '../models/admin.models';
 import {
   Burndown,
   DesempenhoSprint,
   EvolucaoSprint,
   FluxoBizagi,
+  ImpactoPainel,
   ItemAtividade,
   PendenciaPainel,
   ProximaSprint,
@@ -190,6 +192,27 @@ export class ProjetoService {
     })),
   );
 
+  readonly impactos = computed<ImpactoPainel[]>(() =>
+    (this.painel()?.impactos ?? []).map((i) => ({
+      id: i.codigo,
+      titulo: i.titulo,
+      descricao: i.descricao ?? '',
+      tipo: rotuloTipoImpacto(i.tipo),
+      tipoValor: i.tipo,
+      tarefasAfetadas: i.tarefasAfetadas ?? '',
+      acaoCliente: i.acaoCliente ?? '',
+      pendenciaId: i.pendenciaCodigo ?? '',
+      pendenciaTema: i.pendenciaTema ?? '',
+      impacto: rotuloNivel(i.impacto),
+      nivelImpacto: i.impacto ?? '',
+      status: rotuloStatus(i.status),
+      tom: tom(i.status),
+      ativo: i.status === 'ATIVO',
+    })),
+  );
+
+  readonly impactosAtivos = computed(() => this.impactos().filter((i) => i.ativo));
+
   readonly riscos = computed<RiscoPainel[]>(() =>
     (this.painel()?.riscos ?? []).map((r) => ({
       id: r.codigo,
@@ -351,6 +374,7 @@ function tom(status: string): TomBadge {
       return 'aguardando';
     case 'PAUSADO':
       return 'pausado';
+    case 'ATIVO':
     case 'EM_ATRASO':
     case 'BLOQUEADA':
       return 'atraso';

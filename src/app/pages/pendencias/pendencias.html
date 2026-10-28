@@ -6,6 +6,20 @@
   </p>
 </section>
 
+@if (projeto.impactosAtivos().length) {
+  <a routerLink="/tarefas-em-risco" class="impacto-aviso">
+    <div>
+      <strong>Tarefas em risco de atraso</strong>
+      <p>
+        {{ projeto.impactosAtivos().length }}
+        {{ projeto.impactosAtivos().length === 1 ? 'bloqueio ativo' : 'bloqueios ativos' }}
+        por dependência de pendência do cliente.
+      </p>
+    </div>
+    <span>Ver tarefas afetadas →</span>
+  </a>
+}
+
 <div class="table-wrap panel">
   <table>
     <thead>

@@ -7,6 +7,40 @@
   color: var(--dove);
 }
 
+.impacto-aviso {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin: 0 0 1rem;
+  padding: 0.9rem 1.1rem;
+  background: var(--orange-tint);
+  border: 1px solid color-mix(in srgb, var(--orange-primary) 28%, white);
+  border-left: 4px solid var(--orange-primary);
+  border-radius: 10px;
+  text-decoration: none;
+  color: inherit;
+
+  strong {
+    display: block;
+    color: var(--tundora);
+    margin-bottom: 0.2rem;
+  }
+
+  p {
+    margin: 0;
+    color: var(--charcoal);
+    font-size: 0.9rem;
+  }
+
+  span {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--orange-primary);
+    white-space: nowrap;
+  }
+}
+
 .panel {
   background: var(--surface);
   border: 1px solid var(--border);

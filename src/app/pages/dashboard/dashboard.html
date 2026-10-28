@@ -156,6 +156,15 @@
     <span class="nav-card__cta">Ver pendências →</span>
   </a>
 
+  <a routerLink="/tarefas-em-risco" class="nav-card nav-card--impacto">
+    <div class="nav-card__top">
+      <h3>Tarefas em risco</h3>
+      <span class="nav-card__count">{{ projeto.impactosAtivos().length }}</span>
+    </div>
+    <p>Tarefas que podem atrasar enquanto o cliente não resolver as pendências.</p>
+    <span class="nav-card__cta">Ver impactos →</span>
+  </a>
+
   <a routerLink="/riscos" class="nav-card nav-card--riscos">
     <div class="nav-card__top">
       <h3>Riscos</h3>

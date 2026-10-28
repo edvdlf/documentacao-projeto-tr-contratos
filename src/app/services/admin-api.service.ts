@@ -7,6 +7,8 @@ import {
   AtividadeRequest,
   Fluxo,
   FluxoRequest,
+  ImpactoCronograma,
+  ImpactoRequest,
   Listagem,
   Pagina,
   Pendencia,
@@ -21,6 +23,7 @@ import {
   SprintRequest,
   StatusAtividade,
   StatusFluxo,
+  StatusImpacto,
   StatusPendencia,
   StatusProjeto,
   StatusRisco,
@@ -162,6 +165,42 @@ export class AdminApiService {
 
   excluirPendencia(projetoId: string, id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/${projetoId}/pendencias/${id}`);
+  }
+
+  listarImpactos(
+    projetoId: string,
+    filtros: { q: string; status: StatusImpacto | '' },
+    listagem: Listagem,
+  ): Observable<Pagina<ImpactoCronograma>> {
+    return this.http.get<Pagina<ImpactoCronograma>>(`${this.base}/${projetoId}/impactos`, {
+      params: parametros({ ...filtros, ...listagem }),
+    });
+  }
+
+  criarImpacto(projetoId: string, req: ImpactoRequest): Observable<ImpactoCronograma> {
+    return this.http.post<ImpactoCronograma>(`${this.base}/${projetoId}/impactos`, req);
+  }
+
+  atualizarImpacto(
+    projetoId: string,
+    id: string,
+    req: ImpactoRequest,
+  ): Observable<ImpactoCronograma> {
+    return this.http.put<ImpactoCronograma>(`${this.base}/${projetoId}/impactos/${id}`, req);
+  }
+
+  alterarStatusImpacto(
+    projetoId: string,
+    id: string,
+    status: StatusImpacto,
+  ): Observable<ImpactoCronograma> {
+    return this.http.patch<ImpactoCronograma>(`${this.base}/${projetoId}/impactos/${id}/status`, {
+      status,
+    });
+  }
+
+  excluirImpacto(projetoId: string, id: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/${projetoId}/impactos/${id}`);
   }
 
   importarPendencias(projetoId: string, arquivo: File): Observable<ResultadoImportacao> {
