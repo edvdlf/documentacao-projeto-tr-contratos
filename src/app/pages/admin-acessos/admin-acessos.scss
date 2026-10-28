@@ -66,10 +66,31 @@ th {
   white-space: nowrap;
 }
 
+.is-recente td {
+  background: color-mix(in srgb, var(--orange-tint) 70%, white);
+}
+
 .id {
   font-weight: 700;
   color: var(--tundora);
   white-space: nowrap;
+}
+
+.quando {
+  white-space: nowrap;
+
+  strong {
+    display: block;
+    color: var(--tundora);
+    font-weight: 700;
+  }
+
+  small {
+    display: block;
+    margin-top: 0.15rem;
+    color: var(--dove);
+    font-size: 0.75rem;
+  }
 }
 
 .nome {

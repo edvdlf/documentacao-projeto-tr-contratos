@@ -3,7 +3,7 @@
     <div>
       <h2>Histórico de acessos</h2>
       <p>
-        Logins registrados no sistema ({{ total() }}
+        Logins registrados no sistema, do mais recente para o mais antigo ({{ total() }}
         {{ total() === 1 ? 'registro' : 'registros' }}).
       </p>
     </div>
@@ -22,24 +22,27 @@
     <thead>
       <tr>
         <th>#</th>
+        <th>Data e hora</th>
         <th>Usuário</th>
         <th>Nome</th>
-        <th>Data</th>
-        <th>Hora</th>
       </tr>
     </thead>
     <tbody>
       @for (a of acessos(); track a.id; let i = $index) {
-        <tr>
-          <td class="id">{{ total() - paginaAtual() * 100 - i }}</td>
+        <tr [class.is-recente]="i === 0 && paginaAtual() === 0">
+          <td class="id">{{ paginaAtual() * 100 + i + 1 }}</td>
+          <td class="quando">
+            <strong>{{ a.ocorridoEm | date: 'dd/MM/yyyy HH:mm:ss' }}</strong>
+            @if (relativo(a.ocorridoEm); as ha) {
+              <small>{{ ha }}</small>
+            }
+          </td>
           <td class="nome">{{ a.usuario }}</td>
           <td>{{ a.nome }}</td>
-          <td>{{ a.ocorridoEm | date: 'dd/MM/yyyy' }}</td>
-          <td>{{ a.ocorridoEm | date: 'HH:mm:ss' }}</td>
         </tr>
       } @empty {
         <tr>
-          <td colspan="5" class="empty">
+          <td colspan="4" class="empty">
             {{ carregando() ? 'Carregando…' : 'Nenhum acesso registrado ainda.' }}
           </td>
         </tr>

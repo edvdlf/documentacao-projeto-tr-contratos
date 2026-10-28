@@ -31,7 +31,7 @@ export class AdminAcessosComponent {
     this.erro.set(null);
     this.auth.listarAcessos(page, 100).subscribe({
       next: (pagina) => {
-        this.acessos.set(pagina.content);
+        this.acessos.set(ordenarMaisRecentes(pagina.content));
         this.total.set(pagina.page.totalElements);
         this.paginaAtual.set(pagina.page.number);
         this.carregando.set(false);
@@ -56,4 +56,25 @@ export class AdminAcessosComponent {
       error: (e) => this.erro.set(mensagemErro(e)),
     });
   }
+
+  relativo(iso: string): string {
+    const ocorrido = new Date(iso).getTime();
+    if (Number.isNaN(ocorrido)) return '';
+    const minutos = Math.max(0, Math.floor((Date.now() - ocorrido) / 60_000));
+    if (minutos < 1) return 'agora';
+    if (minutos < 60) return `há ${minutos} min`;
+    const horas = Math.floor(minutos / 60);
+    if (horas < 24) return horas === 1 ? 'há 1 hora' : `há ${horas} horas`;
+    const dias = Math.floor(horas / 24);
+    if (dias === 1) return 'ontem';
+    if (dias < 7) return `há ${dias} dias`;
+    return '';
+  }
+}
+
+function ordenarMaisRecentes(acessos: AcessoHistorico[]): AcessoHistorico[] {
+  return [...acessos].sort((a, b) => {
+    const porData = Date.parse(b.ocorridoEm) - Date.parse(a.ocorridoEm);
+    return porData !== 0 ? porData : b.id.localeCompare(a.id);
+  });
 }
