@@ -3,34 +3,38 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
-/** Situação do pacote web do Bizagi publicado na API. */
+/** Situação do pacote web do Bizagi publicado na API (por projeto). */
 export interface InfoPacoteFluxos {
   disponivel: boolean;
   nomeArquivo: string | null;
   publicadoEm: string | null;
   arquivos: number;
   tamanhoBytes: number;
-  /** Caminho relativo à raiz da API (ex.: `/fluxos/index.html`). */
+  /** Caminho relativo à raiz da API (ex.: `/fluxos/{projetoId}/index.html`). */
   url: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
 export class FluxosApiService {
   private readonly http = inject(HttpClient);
-  private readonly base = `${environment.apiUrl}/api/fluxos/pacote`;
+  private readonly base = `${environment.apiUrl}/api/projetos`;
 
-  info(): Observable<InfoPacoteFluxos> {
-    return this.http.get<InfoPacoteFluxos>(this.base);
+  private urlPacote(projetoId: string): string {
+    return `${this.base}/${projetoId}/fluxos/pacote`;
   }
 
-  publicar(arquivo: File): Observable<InfoPacoteFluxos> {
+  info(projetoId: string): Observable<InfoPacoteFluxos> {
+    return this.http.get<InfoPacoteFluxos>(this.urlPacote(projetoId));
+  }
+
+  publicar(projetoId: string, arquivo: File): Observable<InfoPacoteFluxos> {
     const dados = new FormData();
     dados.append('arquivo', arquivo, arquivo.name);
-    return this.http.post<InfoPacoteFluxos>(this.base, dados);
+    return this.http.post<InfoPacoteFluxos>(this.urlPacote(projetoId), dados);
   }
 
-  remover(): Observable<void> {
-    return this.http.delete<void>(this.base);
+  remover(projetoId: string): Observable<void> {
+    return this.http.delete<void>(this.urlPacote(projetoId));
   }
 
   /** URL absoluta do visualizador, abrindo direto na lista de diagramas. */

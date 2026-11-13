@@ -6,28 +6,30 @@
   </p>
 </section>
 
-<div class="toolbar">
-  @if (urlVisualizador(); as url) {
-    <a class="btn" [href]="url" target="_blank" rel="noopener noreferrer">
-      Abrir visualizador de fluxos
-    </a>
-    @if (pacote()?.publicadoEm; as data) {
-      <span class="pacote-info">Publicado em {{ data | date: 'dd/MM/yyyy HH:mm' }}</span>
-    }
-  } @else {
-    <button type="button" class="btn" disabled>Abrir visualizador de fluxos</button>
-    <span class="pacote-info">
-      @if (erroPacote(); as msg) {
-        {{ msg }}
-      } @else if (pacote()) {
-        Nenhum pacote do Bizagi publicado ainda. Um administrador pode enviá-lo em
-        Administração &gt; Fluxos.
-      } @else {
-        Verificando pacote de fluxos…
+@if (projeto.fluxos().length > 0) {
+  <div class="toolbar">
+    @if (urlVisualizador(); as url) {
+      <a class="btn" [href]="url" target="_blank" rel="noopener noreferrer">
+        Abrir visualizador de fluxos
+      </a>
+      @if (pacote()?.publicadoEm; as data) {
+        <span class="pacote-info">Publicado em {{ data | date: 'dd/MM/yyyy HH:mm' }}</span>
       }
-    </span>
-  }
-</div>
+    } @else {
+      <button type="button" class="btn" disabled>Abrir visualizador de fluxos</button>
+      <span class="pacote-info">
+        @if (erroPacote(); as msg) {
+          {{ msg }}
+        } @else if (pacote()) {
+          Nenhum pacote do Bizagi publicado ainda. Um administrador pode enviá-lo em
+          Administração &gt; Fluxos.
+        } @else {
+          Verificando pacote de fluxos…
+        }
+      </span>
+    }
+  </div>
+}
 
 <div class="table-wrap panel">
   <table>

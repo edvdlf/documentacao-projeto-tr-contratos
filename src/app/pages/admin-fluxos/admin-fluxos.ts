@@ -94,18 +94,19 @@ export class AdminFluxosComponent {
   readonly mensagemPacote = signal<string | null>(null);
   readonly erroPacote = signal<string | null>(null);
 
-  constructor() {
-    this.carregarPacote();
-  }
-
   aoSelecionarProjeto(projeto: Projeto | null): void {
     this.projetoAtual.set(projeto);
     this.emEdicao.set(null);
     this.aviso.set(null);
     this.pagina.set(null);
+    this.pacote.set(null);
+    this.arquivoPacote.set(null);
+    this.mensagemPacote.set(null);
+    this.erroPacote.set(null);
     if (!projeto) return;
     this.listagem.update((l) => ({ ...l, page: 0 }));
     this.carregar();
+    this.carregarPacote();
   }
 
   carregar(): void {
@@ -250,12 +251,13 @@ export class AdminFluxosComponent {
   }
 
   publicarPacote(): void {
+    const projeto = this.projetoAtual();
     const arquivo = this.arquivoPacote();
-    if (!arquivo) return;
+    if (!projeto || !arquivo) return;
     this.enviandoPacote.set(true);
     this.mensagemPacote.set(null);
     this.erroPacote.set(null);
-    this.fluxosApi.publicar(arquivo).subscribe({
+    this.fluxosApi.publicar(projeto.id, arquivo).subscribe({
       next: (info) => {
         this.pacote.set(info);
         this.mensagemPacote.set(`Pacote publicado com ${info.arquivos} arquivo(s).`);
@@ -269,9 +271,11 @@ export class AdminFluxosComponent {
   }
 
   removerPacote(): void {
+    const projeto = this.projetoAtual();
+    if (!projeto) return;
     if (!confirm('Remover o pacote de fluxos publicado? O visualizador ficará indisponível.')) return;
     this.erroPacote.set(null);
-    this.fluxosApi.remover().subscribe({
+    this.fluxosApi.remover(projeto.id).subscribe({
       next: () => {
         this.mensagemPacote.set('Pacote removido.');
         this.carregarPacote();
@@ -281,7 +285,12 @@ export class AdminFluxosComponent {
   }
 
   private carregarPacote(): void {
-    this.fluxosApi.info().subscribe({
+    const projeto = this.projetoAtual();
+    if (!projeto) {
+      this.pacote.set(null);
+      return;
+    }
+    this.fluxosApi.info(projeto.id).subscribe({
       next: (info) => this.pacote.set(info),
       error: (e) => this.erroPacote.set(mensagemErro(e)),
     });
