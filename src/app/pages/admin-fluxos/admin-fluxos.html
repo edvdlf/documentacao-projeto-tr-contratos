@@ -259,22 +259,24 @@
 <section class="adm-panel">
   <h3>Pacote web do Bizagi (visualizador)</h3>
   <p class="adm-dica">
-    No Bizagi Modeler, use <strong>Publicar &gt; Web</strong>, compacte a pasta gerada (a que contém o
-    <strong>index.html</strong>) em <strong>.zip</strong> e envie abaixo. O novo pacote substitui o
-    anterior e passa a ser aberto pelo botão "Abrir visualizador de fluxos".
+    Cada projeto tem o próprio pacote do visualizador. No Bizagi Modeler, use
+    <strong>Publicar &gt; Web</strong>, compacte a pasta gerada (a que contém o
+    <strong>index.html</strong>) em <strong>.zip</strong> e envie abaixo para o projeto
+    selecionado. Um novo envio substitui só o pacote deste projeto e passa a ser aberto pelo
+    botão "Abrir visualizador de fluxos".
   </p>
   @if (pacote(); as p) {
     @if (p.disponivel) {
       <p class="adm-dica">
-        Pacote atual: <strong>{{ p.nomeArquivo || 'sem nome' }}</strong> — {{ p.arquivos }}
-        arquivo(s), {{ tamanhoLegivel(p.tamanhoBytes) }}, publicado em
+        Pacote deste projeto: <strong>{{ p.nomeArquivo || 'sem nome' }}</strong> —
+        {{ p.arquivos }} arquivo(s), {{ tamanhoLegivel(p.tamanhoBytes) }}, publicado em
         {{ p.publicadoEm | date: 'dd/MM/yyyy HH:mm' }}.
         @if (urlVisualizador(p); as url) {
           <a [href]="url" target="_blank" rel="noopener noreferrer">Abrir visualizador</a>
         }
       </p>
     } @else {
-      <p class="adm-dica">Nenhum pacote publicado ainda.</p>
+      <p class="adm-dica">Nenhum pacote publicado ainda para este projeto.</p>
     }
   }
   @if (erroPacote(); as msg) {
