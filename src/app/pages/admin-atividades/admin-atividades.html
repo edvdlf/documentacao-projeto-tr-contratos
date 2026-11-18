@@ -1,7 +1,10 @@
 <section class="adm-head">
   <div>
     <h2>Atividades</h2>
-    <p>Cadastre, edite, exclua, altere o status ou importe as atividades do projeto.</p>
+    <p>
+      Cadastre, edite, exclua, altere o status, registre o histórico ou importe as atividades do
+      projeto.
+    </p>
   </div>
   <div class="adm-actions">
     <button
@@ -46,6 +49,101 @@
     <strong>Próxima Sprint</strong>). As atividades são identificadas pela coluna
     <strong>ID</strong>: reimportar atualiza em vez de duplicar.
   </app-importar-planilha>
+}
+
+@if (historicoDe(); as atividadeHist) {
+  <section class="adm-panel">
+    <div class="adm-head" style="margin-bottom: 0.75rem">
+      <div>
+        <h3 style="margin: 0">Histórico · {{ atividadeHist.codigo }}</h3>
+        <p style="margin: 0.25rem 0 0; color: var(--dove); font-size: 0.88rem">
+          {{ atividadeHist.titulo }}
+        </p>
+      </div>
+      <div class="adm-actions">
+        <button type="button" class="adm-btn adm-btn--primary" (click)="novoHistorico()">
+          Novo registro
+        </button>
+        <button type="button" class="adm-btn" (click)="fecharHistorico()">Fechar</button>
+      </div>
+    </div>
+
+    <p class="adm-dica">
+      Registre informações e observações da tarefa. Se a data ficar em branco, a API grava a data de
+      hoje.
+    </p>
+
+    @if (erroHistorico(); as msg) {
+      <div class="adm-alert adm-alert--erro" role="alert">{{ msg }}</div>
+    }
+
+    @if (historicoEmEdicao(); as alvoHist) {
+      <form class="adm-form" (ngSubmit)="salvarHistorico()" style="margin-bottom: 1rem">
+        <label class="adm-field">
+          Data
+          <input type="date" name="dataHistorico" [(ngModel)]="formHistorico.data" />
+        </label>
+        <label class="adm-field adm-field--wide">
+          Texto*
+          <textarea
+            name="textoHistorico"
+            [(ngModel)]="formHistorico.texto"
+            rows="3"
+            required
+            placeholder="Informação, observação, alinhamento…"
+          ></textarea>
+        </label>
+        <div class="adm-form__foot">
+          <button type="button" class="adm-btn" (click)="cancelarHistorico()">Cancelar</button>
+          <button type="submit" class="adm-btn adm-btn--primary" [disabled]="salvandoHistorico()">
+            {{ salvandoHistorico() ? 'Salvando…' : 'Salvar registro' }}
+          </button>
+        </div>
+      </form>
+    }
+
+    <div class="adm-table" style="padding: 0; border: none; background: transparent">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 7rem">Data</th>
+            <th>Texto</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (h of historicos(); track h.id) {
+            <tr>
+              <td class="adm-table__strong">{{ dataBr(h.data) }}</td>
+              <td style="white-space: pre-wrap">{{ h.texto }}</td>
+              <td class="adm-table__acoes">
+                <button type="button" class="adm-btn adm-btn--sm" (click)="editarHistorico(h)">
+                  Editar
+                </button>
+                <button
+                  type="button"
+                  class="adm-btn adm-btn--sm adm-btn--danger"
+                  (click)="excluirHistorico(h)"
+                >
+                  Excluir
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="3" class="adm-table__vazio">
+                {{
+                  carregandoHistorico()
+                    ? 'Carregando histórico…'
+                    : 'Nenhum registro no histórico desta atividade.'
+                }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
 }
 
 @if (emEdicao(); as alvo) {
@@ -205,6 +303,9 @@
             </select>
           </td>
           <td class="adm-table__acoes">
+            <button type="button" class="adm-btn adm-btn--sm" (click)="abrirHistorico(a)">
+              Histórico
+            </button>
             <button type="button" class="adm-btn adm-btn--sm" (click)="editar(a)">Editar</button>
             <button type="button" class="adm-btn adm-btn--sm adm-btn--danger" (click)="excluir(a)">
               Excluir

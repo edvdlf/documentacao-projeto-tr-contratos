@@ -7,6 +7,8 @@ import {
   AtividadeRequest,
   Fluxo,
   FluxoRequest,
+  HistoricoAtividade,
+  HistoricoAtividadeRequest,
   ImpactoCronograma,
   ImpactoRequest,
   Listagem,
@@ -275,6 +277,50 @@ export class AdminApiService {
     return this.http.delete<void>(`${this.base}/${projetoId}/atividades/${id}`);
   }
 
+  listarHistoricoAtividade(
+    projetoId: string,
+    atividadeId: string,
+    listagem: Listagem = { page: 0, size: 100, sort: 'data', direction: 'DESC' },
+  ): Observable<Pagina<HistoricoAtividade>> {
+    return this.http.get<Pagina<HistoricoAtividade>>(
+      `${this.base}/${projetoId}/atividades/${atividadeId}/historicos`,
+      { params: parametros({ ...listagem }) },
+    );
+  }
+
+  criarHistoricoAtividade(
+    projetoId: string,
+    atividadeId: string,
+    req: HistoricoAtividadeRequest,
+  ): Observable<HistoricoAtividade> {
+    return this.http.post<HistoricoAtividade>(
+      `${this.base}/${projetoId}/atividades/${atividadeId}/historicos`,
+      req,
+    );
+  }
+
+  atualizarHistoricoAtividade(
+    projetoId: string,
+    atividadeId: string,
+    id: string,
+    req: HistoricoAtividadeRequest,
+  ): Observable<HistoricoAtividade> {
+    return this.http.put<HistoricoAtividade>(
+      `${this.base}/${projetoId}/atividades/${atividadeId}/historicos/${id}`,
+      req,
+    );
+  }
+
+  excluirHistoricoAtividade(
+    projetoId: string,
+    atividadeId: string,
+    id: string,
+  ): Observable<void> {
+    return this.http.delete<void>(
+      `${this.base}/${projetoId}/atividades/${atividadeId}/historicos/${id}`,
+    );
+  }
+
   baixarTemplateProjetos(): Observable<Blob> {
     return this.http.get(`${this.base}/importacoes/template`, { responseType: 'blob' });
   }
@@ -353,7 +399,7 @@ export function salvarArquivo(blob: Blob, nome: string): void {
   URL.revokeObjectURL(url);
 }
 
-function parametros(valores: Record<string, string | number>): HttpParams {
+function parametros(valores: object): HttpParams {
   let params = new HttpParams();
   for (const [chave, valor] of Object.entries(valores)) {
     if (valor !== '' && valor !== null && valor !== undefined) {

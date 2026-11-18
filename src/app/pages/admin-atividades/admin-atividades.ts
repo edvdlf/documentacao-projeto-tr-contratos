@@ -3,12 +3,15 @@ import { FormsModule } from '@angular/forms';
 import {
   Atividade,
   AtividadeRequest,
+  HistoricoAtividade,
+  HistoricoAtividadeRequest,
   Listagem,
   Pagina,
   Projeto,
   STATUS_ATIVIDADE,
   Sprint,
   StatusAtividade,
+  dataBr,
   rotuloStatus,
   tomStatus,
 } from '../../models/admin.models';
@@ -42,6 +45,10 @@ function formularioVazio(): AtividadeRequest {
   };
 }
 
+function formularioHistoricoVazio(): { data: string; texto: string } {
+  return { data: '', texto: '' };
+}
+
 @Component({
   selector: 'app-admin-atividades',
   imports: [FormsModule, SeletorProjetoComponent, ImportarPlanilhaComponent],
@@ -58,6 +65,7 @@ export class AdminAtividadesComponent {
   readonly ordenacoes = ORDENACOES;
   readonly rotuloStatus = rotuloStatus;
   readonly tomStatus = tomStatus;
+  readonly dataBr = dataBr;
 
   readonly projetoAtual = signal<Projeto | null>(null);
   readonly sprints = signal<Sprint[]>([]);
@@ -78,9 +86,18 @@ export class AdminAtividadesComponent {
   readonly erroForm = signal<string | null>(null);
   readonly salvando = signal(false);
 
+  readonly historicoDe = signal<Atividade | null>(null);
+  readonly historicos = signal<HistoricoAtividade[]>([]);
+  readonly carregandoHistorico = signal(false);
+  readonly erroHistorico = signal<string | null>(null);
+  readonly salvandoHistorico = signal(false);
+  readonly historicoEmEdicao = signal<HistoricoAtividade | 'novo' | null>(null);
+  formHistorico: { data: string; texto: string } = formularioHistoricoVazio();
+
   aoSelecionarProjeto(projeto: Projeto | null): void {
     this.projetoAtual.set(projeto);
     this.emEdicao.set(null);
+    this.fecharHistorico();
     this.aviso.set(null);
     this.pagina.set(null);
     this.sprints.set([]);
@@ -225,9 +242,126 @@ export class AdminAtividadesComponent {
         if (atual && atual !== 'nova' && atual.id === a.id) {
           this.emEdicao.set(null);
         }
+        if (this.historicoDe()?.id === a.id) {
+          this.fecharHistorico();
+        }
         this.carregar();
       },
       error: (e) => this.erro.set(mensagemErro(e)),
+    });
+  }
+
+  abrirHistorico(a: Atividade): void {
+    this.emEdicao.set(null);
+    this.importando.set(false);
+    this.aviso.set(null);
+    this.historicoDe.set(a);
+    this.historicoEmEdicao.set(null);
+    this.formHistorico = formularioHistoricoVazio();
+    this.erroHistorico.set(null);
+    this.carregarHistorico();
+  }
+
+  fecharHistorico(): void {
+    this.historicoDe.set(null);
+    this.historicos.set([]);
+    this.historicoEmEdicao.set(null);
+    this.erroHistorico.set(null);
+    this.formHistorico = formularioHistoricoVazio();
+  }
+
+  novoHistorico(): void {
+    this.formHistorico = formularioHistoricoVazio();
+    this.historicoEmEdicao.set('novo');
+    this.erroHistorico.set(null);
+  }
+
+  editarHistorico(h: HistoricoAtividade): void {
+    this.formHistorico = { data: h.data, texto: h.texto };
+    this.historicoEmEdicao.set(h);
+    this.erroHistorico.set(null);
+  }
+
+  cancelarHistorico(): void {
+    this.historicoEmEdicao.set(null);
+    this.formHistorico = formularioHistoricoVazio();
+    this.erroHistorico.set(null);
+  }
+
+  salvarHistorico(): void {
+    const atividade = this.historicoDe();
+    const alvo = this.historicoEmEdicao();
+    if (!atividade || !alvo) return;
+
+    const texto = this.formHistorico.texto.trim();
+    if (!texto) {
+      this.erroHistorico.set('Informe o texto do histórico.');
+      return;
+    }
+
+    const req: HistoricoAtividadeRequest = {
+      data: textoOuNulo(this.formHistorico.data),
+      texto,
+    };
+
+    this.salvandoHistorico.set(true);
+    this.erroHistorico.set(null);
+    const chamada =
+      alvo === 'novo'
+        ? this.api.criarHistoricoAtividade(atividade.projetoId, atividade.id, req)
+        : this.api.atualizarHistoricoAtividade(atividade.projetoId, atividade.id, alvo.id, req);
+
+    chamada.subscribe({
+      next: () => {
+        this.salvandoHistorico.set(false);
+        this.historicoEmEdicao.set(null);
+        this.formHistorico = formularioHistoricoVazio();
+        this.aviso.set(
+          alvo === 'novo'
+            ? `Histórico adicionado à atividade ${atividade.codigo}.`
+            : `Histórico da atividade ${atividade.codigo} atualizado.`,
+        );
+        this.carregarHistorico();
+      },
+      error: (e) => {
+        this.salvandoHistorico.set(false);
+        this.erroHistorico.set(mensagemErro(e));
+      },
+    });
+  }
+
+  excluirHistorico(h: HistoricoAtividade): void {
+    const atividade = this.historicoDe();
+    if (!atividade) return;
+    if (!confirm(`Excluir o registro de ${dataBr(h.data)}?`)) return;
+
+    this.api.excluirHistoricoAtividade(atividade.projetoId, atividade.id, h.id).subscribe({
+      next: () => {
+        this.aviso.set(`Registro de histórico removido da atividade ${atividade.codigo}.`);
+        const editando = this.historicoEmEdicao();
+        if (editando && editando !== 'novo' && editando.id === h.id) {
+          this.cancelarHistorico();
+        }
+        this.carregarHistorico();
+      },
+      error: (e) => this.erroHistorico.set(mensagemErro(e)),
+    });
+  }
+
+  private carregarHistorico(): void {
+    const atividade = this.historicoDe();
+    if (!atividade) return;
+    this.carregandoHistorico.set(true);
+    this.erroHistorico.set(null);
+    this.api.listarHistoricoAtividade(atividade.projetoId, atividade.id).subscribe({
+      next: (p) => {
+        this.historicos.set(p.content);
+        this.carregandoHistorico.set(false);
+      },
+      error: (e) => {
+        this.erroHistorico.set(mensagemErro(e));
+        this.carregandoHistorico.set(false);
+      },
     });
   }
 
@@ -236,6 +370,7 @@ export class AdminAtividadesComponent {
     this.erroForm.set(null);
     this.aviso.set(null);
     this.importando.set(false);
+    this.fecharHistorico();
     this.emEdicao.set(alvo);
   }
 }

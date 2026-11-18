@@ -267,6 +267,24 @@ export interface AtividadeRequest {
   observacoes: string | null;
 }
 
+/** Item do histórico de uma atividade (tarefa). */
+export interface HistoricoAtividade {
+  id: string;
+  atividadeId: string;
+  projetoId: string;
+  /** yyyy-MM-dd */
+  data: string;
+  texto: string;
+  criadoEm: string;
+  atualizadoEm: string;
+}
+
+export interface HistoricoAtividadeRequest {
+  /** yyyy-MM-dd; null/omitido → API usa a data de hoje. */
+  data: string | null;
+  texto: string;
+}
+
 export interface Sprint {
   id: string;
   projetoId: string;
