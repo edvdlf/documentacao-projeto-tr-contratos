@@ -51,6 +51,11 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/riscos/riscos').then((m) => m.RiscosComponent),
       },
       {
+        path: 'historicos',
+        loadComponent: () =>
+          import('./pages/historicos/historicos').then((m) => m.HistoricosComponent),
+      },
+      {
         path: 'evolucao',
         redirectTo: '',
         pathMatch: 'full',

@@ -272,6 +272,9 @@ export interface HistoricoAtividade {
   id: string;
   atividadeId: string;
   projetoId: string;
+  atividadeCodigo: string;
+  atividadeTitulo: string;
+  atividadeSprint: string | null;
   /** yyyy-MM-dd */
   data: string;
   texto: string;

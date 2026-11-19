@@ -277,6 +277,15 @@ export class AdminApiService {
     return this.http.delete<void>(`${this.base}/${projetoId}/atividades/${id}`);
   }
 
+  listarHistoricosProjeto(
+    projetoId: string,
+    listagem: Listagem = { page: 0, size: 50, sort: 'data', direction: 'DESC' },
+  ): Observable<Pagina<HistoricoAtividade>> {
+    return this.http.get<Pagina<HistoricoAtividade>>(`${this.base}/${projetoId}/historicos`, {
+      params: parametros({ ...listagem }),
+    });
+  }
+
   listarHistoricoAtividade(
     projetoId: string,
     atividadeId: string,

@@ -1,0 +1,108 @@
+.page-head h2 {
+  margin: 0 0 0.35rem;
+}
+
+.page-head p {
+  margin: 0 0 1rem;
+  color: var(--dove);
+  max-width: 48rem;
+  line-height: 1.45;
+}
+
+.erro {
+  margin: 0 0 1rem;
+  color: #b42318;
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.5rem 0.85rem 0.85rem;
+}
+
+.table-wrap {
+  overflow: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.55rem 0.4rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+th {
+  color: var(--dove);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.id {
+  font-weight: 700;
+  color: var(--tundora);
+  white-space: nowrap;
+}
+
+.nome {
+  color: var(--tundora);
+  min-width: 12rem;
+
+  strong {
+    display: block;
+    font-weight: 700;
+  }
+
+  span {
+    display: block;
+    margin-top: 0.15rem;
+    color: var(--dove);
+    line-height: 1.35;
+  }
+}
+
+.desc {
+  color: var(--dove);
+  line-height: 1.45;
+  white-space: pre-wrap;
+  min-width: 14rem;
+  max-width: 36rem;
+}
+
+.empty {
+  color: var(--dove);
+  text-align: center;
+  padding: 1.25rem 0.5rem;
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.85rem;
+  color: var(--dove);
+  font-size: 0.88rem;
+}
+
+.pager__btn {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--tundora);
+  border-radius: 6px;
+  padding: 0.35rem 0.7rem;
+  cursor: pointer;
+  font: inherit;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}

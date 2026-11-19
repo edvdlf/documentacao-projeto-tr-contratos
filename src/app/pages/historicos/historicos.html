@@ -1,0 +1,71 @@
+<section class="page-head">
+  <h2>Históricos das tarefas</h2>
+  <p>
+    Observações e registros feitos nas atividades do projeto
+    {{ projeto.projetoAtual()?.nomeCurto || projeto.projetoAtual()?.nome || '' }}
+    ({{ total() }}
+    {{ total() === 1 ? 'registro' : 'registros' }}).
+  </p>
+</section>
+
+@if (erro(); as msg) {
+  <p class="erro" role="alert">{{ msg }}</p>
+}
+
+<div class="table-wrap panel">
+  <table>
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Atividade</th>
+        <th>Sprint</th>
+        <th>Registro</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (h of historicos(); track h.id) {
+        <tr>
+          <td class="id">{{ dataBr(h.data) }}</td>
+          <td class="nome">
+            <strong>{{ h.atividadeCodigo }}</strong>
+            <span>{{ h.atividadeTitulo }}</span>
+          </td>
+          <td>{{ h.atividadeSprint || '—' }}</td>
+          <td class="desc">{{ h.texto }}</td>
+        </tr>
+      } @empty {
+        <tr>
+          <td colspan="4" class="empty">
+            {{
+              carregando()
+                ? 'Carregando…'
+                : 'Nenhum histórico registrado ainda. Cadastre em Administração > Atividades.'
+            }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+@if (totalPaginas() > 1) {
+  <div class="pager">
+    <button
+      type="button"
+      class="pager__btn"
+      [disabled]="paginaAtual() === 0 || carregando()"
+      (click)="carregar(paginaAtual() - 1)"
+    >
+      Anterior
+    </button>
+    <span>Página {{ paginaAtual() + 1 }} de {{ totalPaginas() }}</span>
+    <button
+      type="button"
+      class="pager__btn"
+      [disabled]="paginaAtual() + 1 >= totalPaginas() || carregando()"
+      (click)="carregar(paginaAtual() + 1)"
+    >
+      Próxima
+    </button>
+  </div>
+}
