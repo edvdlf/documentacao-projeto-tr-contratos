@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { ProjetoService } from '../../services/projeto.service';
 
 @Component({
@@ -12,6 +12,10 @@ export class EntreguesComponent {
 
   constructor() {
     void this.projeto.atualizar();
+    effect(() => {
+      this.projeto.projetoAtual()?.id;
+      this.sprintFiltro.set('todas');
+    });
   }
 
   readonly filtrados = computed(() => {

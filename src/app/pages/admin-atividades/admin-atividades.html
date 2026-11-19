@@ -305,6 +305,14 @@
           <td class="adm-table__acoes">
             <button type="button" class="adm-btn adm-btn--sm" (click)="abrirHistorico(a)">
               Histórico
+              @if ((a.quantidadeHistoricos ?? 0) > 0) {
+                <span
+                  class="adm-btn__badge"
+                  [attr.aria-label]="(a.quantidadeHistoricos ?? 0) + ' registros'"
+                >
+                  {{ a.quantidadeHistoricos }}
+                </span>
+              }
             </button>
             <button type="button" class="adm-btn adm-btn--sm" (click)="editar(a)">Editar</button>
             <button type="button" class="adm-btn adm-btn--sm adm-btn--danger" (click)="excluir(a)">

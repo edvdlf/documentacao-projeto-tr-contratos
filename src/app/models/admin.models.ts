@@ -253,6 +253,8 @@ export interface Atividade {
   responsavel: string | null;
   status: StatusAtividade;
   observacoes: string | null;
+  /** Quantidade de registros no histórico da atividade (0 quando ainda não informado pela API). */
+  quantidadeHistoricos?: number;
   criadoEm: string;
   atualizadoEm: string;
 }

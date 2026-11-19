@@ -1,14 +1,13 @@
-import { Component, effect, inject, input, output, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Projeto } from '../../models/admin.models';
-import { AdminApiService, mensagemErro } from '../../services/admin-api.service';
-
-const CHAVE_ULTIMO_PROJETO = 'vetorit.admin.projeto';
+import { ProjetoService } from '../../services/projeto.service';
 
 /**
- * Seleção do projeto das telas de atividades, sprints e fluxos. O projeto fica na query string
- * (`?projeto=<id>`); sem ela, usa o último escolhido ou o primeiro da lista.
+ * Seleção de projeto nas telas de administração.
+ * Usa o mesmo projeto em acompanhamento do portal (`ProjetoService` / combobox do shell).
+ * Mantém `?projeto=<id>` na URL para deep links e troca entre telas admin.
  */
 @Component({
   selector: 'app-seletor-projeto',
@@ -18,7 +17,7 @@ const CHAVE_ULTIMO_PROJETO = 'vetorit.admin.projeto';
       Projeto
       <select
         name="seletorProjeto"
-        [ngModel]="projetoId() ?? ''"
+        [ngModel]="idExibido()"
         (ngModelChange)="selecionar($event)"
         [disabled]="!projetos().length"
       >
@@ -29,61 +28,68 @@ const CHAVE_ULTIMO_PROJETO = 'vetorit.admin.projeto';
           <option [value]="p.id">{{ p.codigo }} — {{ p.nome }}</option>
         }
       </select>
-      @if (erro(); as msg) {
-        <span class="adm-field__erro">{{ msg }}</span>
-      }
     </label>
   `,
 })
 export class SeletorProjetoComponent {
-  private readonly api = inject(AdminApiService);
+  private readonly portal = inject(ProjetoService);
   private readonly router = inject(Router);
 
-  /** Id vindo da query string `projeto`. */
+  /** Id vindo da query string `projeto` (withComponentInputBinding). */
   readonly projetoId = input<string | undefined>();
-  /** Emitido sempre que o projeto efetivo muda (null se o id não existe). */
+  /** Emitido sempre que o projeto efetivo muda (null se não houver). */
   readonly projetoAlterado = output<Projeto | null>();
 
-  readonly projetos = signal<Projeto[]>([]);
-  readonly carregado = signal(false);
-  readonly erro = signal<string | null>(null);
+  readonly projetos = this.portal.projetos;
+  readonly carregado = this.portal.carregado;
+  /** Prefere a query (troca imediata no select) e cai no projeto do portal. */
+  readonly idExibido = computed(
+    () => this.projetoId() || this.portal.projetoAtual()?.id || '',
+  );
+
   private ultimoEmitido: string | null | undefined;
 
   constructor() {
-    this.api.listarProjetos('', { page: 0, size: 200, sort: 'nome', direction: 'ASC' }).subscribe({
-      next: (p) => {
-        this.projetos.set(p.content);
-        this.carregado.set(true);
-      },
-      error: (e) => {
-        this.erro.set(mensagemErro(e));
-        this.carregado.set(true);
-      },
-    });
-
     effect(() => {
-      if (!this.carregado()) return;
-      const lista = this.projetos();
-      const id = this.projetoId();
-      if (!id) {
-        const ultimo = localStorage.getItem(CHAVE_ULTIMO_PROJETO);
-        const padrao = lista.find((p) => p.id === ultimo) ?? lista[0];
-        if (padrao) {
-          this.selecionar(padrao.id, true);
-        } else {
-          this.emitir(null);
+      if (!this.portal.carregado()) return;
+
+      const lista = this.portal.projetos();
+      const queryId = this.projetoId();
+      const atual = this.portal.projetoAtual();
+      const atualId = atual?.id ?? null;
+
+      if (queryId && lista.some((p) => p.id === queryId)) {
+        if (queryId !== atualId) {
+          // Deep link ou select admin à frente do painel do portal.
+          void this.portal.selecionarProjeto(queryId);
+          return;
         }
+        this.emitir(atual);
         return;
       }
-      const projeto = lista.find((p) => p.id === id) ?? null;
-      if (projeto) localStorage.setItem(CHAVE_ULTIMO_PROJETO, projeto.id);
-      this.emitir(projeto);
+
+      if (atualId) {
+        // Portal (shell) é a fonte da verdade: alinha a query e avisa a tela admin.
+        if (queryId !== atualId) {
+          this.atualizarQuery(atualId, true, true);
+        }
+        this.emitir(atual);
+        return;
+      }
+
+      this.emitir(null);
     });
   }
 
-  selecionar(id: string, substituirHistorico = false): void {
+  selecionar(id: string): void {
+    if (!id) return;
+    this.atualizarQuery(id, false, true);
+    void this.portal.selecionarProjeto(id);
+  }
+
+  private atualizarQuery(id: string, substituirHistorico: boolean, limparSprint: boolean): void {
     this.router.navigate([], {
-      queryParams: { projeto: id || null },
+      queryParams: limparSprint ? { projeto: id || null, sprint: null } : { projeto: id || null },
       queryParamsHandling: 'merge',
       replaceUrl: substituirHistorico,
     });

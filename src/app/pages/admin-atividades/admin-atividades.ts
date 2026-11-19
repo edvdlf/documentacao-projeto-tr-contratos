@@ -356,6 +356,7 @@ export class AdminAtividadesComponent {
     this.api.listarHistoricoAtividade(atividade.projetoId, atividade.id).subscribe({
       next: (p) => {
         this.historicos.set(p.content);
+        this.atualizarContagemHistorico(atividade.id, p.page.totalElements);
         this.carregandoHistorico.set(false);
       },
       error: (e) => {
@@ -363,6 +364,22 @@ export class AdminAtividadesComponent {
         this.carregandoHistorico.set(false);
       },
     });
+  }
+
+  private atualizarContagemHistorico(atividadeId: string, quantidade: number): void {
+    this.pagina.update((p) =>
+      p
+        ? {
+            ...p,
+            content: p.content.map((a) =>
+              a.id === atividadeId ? { ...a, quantidadeHistoricos: quantidade } : a,
+            ),
+          }
+        : p,
+    );
+    this.historicoDe.update((a) =>
+      a && a.id === atividadeId ? { ...a, quantidadeHistoricos: quantidade } : a,
+    );
   }
 
   private abrirFormulario(alvo: Atividade | 'nova'): void {

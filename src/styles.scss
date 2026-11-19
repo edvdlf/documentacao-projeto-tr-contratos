@@ -183,6 +183,21 @@ img {
   font-size: 0.78rem;
 }
 
+.adm-btn__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.15rem;
+  height: 1.15rem;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  background: var(--orange-primary);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
 .adm-panel {
   background: var(--surface);
   border: 1px solid var(--border);
